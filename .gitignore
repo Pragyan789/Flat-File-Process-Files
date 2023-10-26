@@ -1,0 +1,22 @@
+/.ipynb_checkpoints
+/all_dataframes.csv
+/BO Analysis.ipynb
+/BO Analysis.py
+/Branch report day2 (1) (1).ipynb
+/Branch report day2.ipynb
+/DQ Analysis.ipynb
+/DQ Backfill analysis.ipynb
+/dq backfills_scraped.ipynb
+/DQ Config File.xlsx
+/DQ Qty_MIN_MAX Analysis.ipynb
+/dq unknown_roche_ndc analysis.ipynb
+/dq uom_inconsistencies.ipynb
+/dq zip_code analysis.ipynb
+/NDC Factoring Values.xlsx
+/SQL Query for Backfills Complete.txt
+/SQL Query for Backfills.txt
+/Supplier Names TPC.xlsx
+/testing.ipynb
+/TPC File.xlsx
+/Untitled.ipynb
+/__pycache__
