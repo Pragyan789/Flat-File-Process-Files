@@ -213,9 +213,22 @@ if df is not None and df_outs is not None:
 
     #Adding Comments for 'Pass' cases
     Final_Output["Comment"] = None
+
+    variance_list = []
+
     for ndc in df_trend_break.index:
         if Final_Output["Percentage"].loc[ndc] >= 95 and Final_Output["Percentage"].loc[ndc] <= 105:
             Final_Output["Comment"].loc[ndc] = "Pass"
+        else:
+            variance_list = list(df_variance.loc[ndc])
+            if variance_list[-1] == 0:
+                Final_Output["Comment"].loc[ndc] = "Pass as inventory remained steady"
+            elif variance_list[-1] > 0:
+                Final_Output["Comment"].loc[ndc] = "Pass as inventory went down by " + str(variance_list[-1]) + " this month"
+            elif any(var <= variance_list[-1] for var in variance_list[:-1]):
+                Final_Output["Comment"].loc[ndc] = "Pass as similar/higher inventory observed in past"
+            else:
+                Final_Output["Comment"].loc[ndc] = "Case to be monitored"
 
     print(Final_Output)
 
