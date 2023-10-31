@@ -114,10 +114,7 @@ def dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch
         # Apply the function to each row
         selected_data.loc[:, 'Comment']  = selected_data.apply(check_reported_first_time, axis=1)
 
-        print(selected_data['Comment'])
-
-        pd.options.display.max_rows = 4000
-
+        #Comment formation
         comment = ''
         for branch in non_trending_branches:
             if selected_data.loc[branch]['Comment']=="":
@@ -130,4 +127,5 @@ def dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch
                 print(comment)
                 selected_data.loc[branch,'Comment'] = comment
 
+        #Export data to file
         selected_data.to_csv(r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\output2.csv")
