@@ -33,15 +33,15 @@ sap_ins_df = None
 
 #Data Sources Import
 try:
-    df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\Humana Ins.xlsx")
+    df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\Walgreens Ins.xlsx")
 except:
     print("Enter correct file path for Combined Ins File")
 try:
-    reference_list_df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\Humana Reference List.xlsx")
+    reference_list_df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\Reference List.xlsx")
 except:
     print("Please enter correct path for Account Names Reference List")
 try:
-    df_outs_raw = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\Humana BO.xlsx", skiprows=1, usecols = 'B:Q')  #skipping first row and first column
+    df_outs_raw = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\Walgreens BO.xlsx", skiprows=1, usecols = 'B:Q')  #skipping first row and first column
 except:
     print("Enter correct file path for BO Table File")
 try:
@@ -50,30 +50,35 @@ except:
     print("Please enter correct path for Sapins file")
 
 
-#Get Data month, and 13 months before data month
+#Get Data month (previous month), and 13 months before data month
 today = date.today()
 data_month = today.month - 1
 data_month_year = (date.today() - pd.offsets.DateOffset(months=1)).year
 start_month = (date.today() - pd.offsets.DateOffset(months=13)).month
 start_year = (date.today() - pd.offsets.DateOffset(months=13)).year
 
+#For custom usage, comment it for automated updation
+data_month = 9
+data_month_year = 2023
+start_month = 9
+start_year = 2022
 
 sap_ins_pivot = None
 try:
-    sap_ins_pivot = bo_analysis_functions.sap_ins_pivot_creation(sap_ins_df)
+    sap_ins_pivot = bo_analysis_functions.sap_ins_pivot_creation(sap_ins_df, data_month, data_month_year, start_month, start_year)
 except:
     print("Sapins Pivot creation Function did not execute properly")
 
 if df is not None and df_outs_raw is not None:
-    try:
-        ins_pivot = bo_analysis_functions.df_ins_pivot_creation(df, reference_list_df)
-    except:
-        print("Ins Pivot creation Function did not execute properly")
-
     # try:
-    outs_pivot = bo_analysis_functions.df_outs_pivot_creation(data_month_year,data_month, df_outs_raw)
+    ins_pivot = bo_analysis_functions.df_ins_pivot_creation(df, reference_list_df, data_month, data_month_year, start_month, start_year)
     # except:
-    #     print("Outs Pivot creation Function did not execute properly")
+    #     print("Ins Pivot creation Function did not execute properly")
+
+    try:
+        outs_pivot = bo_analysis_functions.df_outs_pivot_creation(data_month_year, data_month, df_outs_raw)
+    except:
+        print("Outs Pivot creation Function did not execute properly")
 
 #Calling main analysis function
 if df is not None and df_outs_raw is not None:

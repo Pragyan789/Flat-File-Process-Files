@@ -1,18 +1,43 @@
 import pandas as pd
 import numpy as np
 
-def df_ins_pivot_creation(df_ins, reference_list_df):
-    if reference_list_df is not None:
-        df_ins.rename(columns = {'NAME':'Account Name'}, inplace = True)
-        df_combined_ins = pd.merge(df_ins, reference_list_df, on='Account Name', how='inner')
-    else:
-        df_combined_ins = df_ins
+def df_ins_pivot_creation(df_ins, reference_list_df, data_month, data_month_year, start_month, start_year):
+    
+    df_combined_ins = df_ins
 
-    df_combined_ins["month"] = df_combined_ins.MOST_RECENT_SHIP_DATE.dt.month
-    df_combined_ins["year"] = df_combined_ins.MOST_RECENT_SHIP_DATE.dt.year
+    if reference_list_df is not None:
+        reference_list_df = reference_list_df.fillna('')
+
+        if len(reference_list_df[reference_list_df['Account Name']!='']['Account Name']) != 0:
+            df_combined_ins.rename(columns = {'NAME':'Account Name'}, inplace = True)
+            df_combined_ins = pd.merge(df_combined_ins, reference_list_df[reference_list_df['Account Name']!='']['Account Name'], on='Account Name', how='inner')
+        if len(reference_list_df[reference_list_df['ID1_VALUE.1']!='']['ID1_VALUE.1']) != 0:
+            df_combined_ins = pd.merge(df_combined_ins, reference_list_df[reference_list_df['ID1_VALUE.1']!='']['ID1_VALUE.1'], on='ID1_VALUE.1', how='inner')
+        if len(reference_list_df[reference_list_df['CITY']!='']['CITY']) != 0:
+            df_combined_ins = pd.merge(df_combined_ins, reference_list_df[reference_list_df['CITY']!='']['CITY'], on='CITY', how='inner')
+        if len(reference_list_df[reference_list_df['STATE']!='']['STATE']) != 0:
+            df_combined_ins = pd.merge(df_combined_ins, reference_list_df[reference_list_df['STATE']!='']['STATE'], on='STATE', how='inner')
+
+    #Sender Name Filter
+    df_combined_ins = df_combined_ins[df_combined_ins['SENDER_NAME'].isin(['Morris and Dickson','Cardinal','CARDSD','BIOCARE','Amerisource','McKesson','OTN'])]
+    
+    df_combined_ins["month"] = df_combined_ins.FILE_CONTENT_START_DATE.dt.month
+    df_combined_ins["year"] = df_combined_ins.FILE_CONTENT_START_DATE.dt.year
+
+    #converting date format into a standard format and storing it in a new column
+    df_combined_ins['DATE'] = pd.to_datetime(pd.to_datetime(df_combined_ins['FILE_CONTENT_START_DATE']).dt.strftime('%Y-%m-%d'))
+
+    start_check_date = str(start_year) + '-' + str(start_month) + '-01'
+    
+    if data_month in [1,3,5,7,8,10,12]:
+        end_check_date = str(data_month_year) + '-' + str(data_month) + '-31'
+    elif data_month in [2]:
+        end_check_date = str(data_month_year) + '-' + str(data_month) + '-28'
+    else:
+        end_check_date = str(data_month_year) + '-' + str(data_month) + '-30'
 
     #Ins Data Pivot creation, need to substitute hardcoded values
-    pivot = pd.pivot_table(df_combined_ins.loc[(df_combined_ins['MOST_RECENT_SHIP_DATE'] >= '2022-09-01') & (df_combined_ins['MOST_RECENT_SHIP_DATE'] <'2023-09-30')], values='QTY_DISPENSED', index='NDC_NBR', columns=['year','month'], aggfunc=np.sum,fill_value=0)
+    pivot = pd.pivot_table(df_combined_ins.loc[(df_combined_ins['DATE'] >= start_check_date) & (df_combined_ins['DATE'] <= end_check_date)], values='QTY_DISPENSED', index='NDC_NBR', columns=['year','month'], aggfunc=np.sum,fill_value=0)
     pivot = pivot.reset_index()
     pivot = pivot.set_index(pivot.columns[0])
 
@@ -37,13 +62,21 @@ def df_outs_pivot_creation(data_month_year, data_month, df_outs_raw):
 
     return df_outs
 
-def sap_ins_pivot_creation(sap_ins_df):
+def sap_ins_pivot_creation(sap_ins_df, data_month, data_month_year, start_month, start_year):
     if sap_ins_df is not None:
         sap_ins_df["Month"] = sap_ins_df.SHIP_DATE.dt.month
         sap_ins_df["Year"] = sap_ins_df.SHIP_DATE.dt.year
         #
+        start_check_date = str(start_year) + '-' + str(start_month) + '-01'
+        
+        if data_month in [1,3,5,7,8,10,12]:
+            end_check_date = str(data_month_year) + '-' + str(data_month) + '-31'
+        else:
+            end_check_date = str(data_month_year) + '-' + str(data_month) + '-30'
+
+
         # Filter Names (ship_to and sold_to) to be replaced below
-        sap_ins_pivot = pd.pivot_table((sap_ins_df.loc[(sap_ins_df['SHIP_DATE'] >= '2022-09-01') & (sap_ins_df['SHIP_DATE'] <'2023-09-30') & ((sap_ins_df['SHIP_TO_PARTY'] == ('CENTERWELL PHARMACY')) | (sap_ins_df['SHIP_TO_PARTY'] == ('CENTERWELL PHARMACY INC')))]), values='SALES_UNIT', index='NATIONAL_DRUG_CODE', columns=['Year','Month'], aggfunc=np.sum,fill_value=0)
+        sap_ins_pivot = pd.pivot_table((sap_ins_df.loc[(sap_ins_df['SHIP_DATE'] >= start_check_date) & (sap_ins_df['SHIP_DATE'] < end_check_date) & ((sap_ins_df['SHIP_TO_PARTY'] == ('WALGREEN SPECIALTY PHARMACY #15443')) | (sap_ins_df['SHIP_TO_PARTY'] == ('WALGREENS SPECIALTY PHARMACY')) | (sap_ins_df['SHIP_TO_PARTY'] == ('WALGREEN LOUISIANA CO., INC.')) | (sap_ins_df['SHIP_TO_PARTY'] == ('JOHNS HOPKINS USFHP AT WALGREENS')) | (sap_ins_df['SHIP_TO_PARTY'] == ('WALGREEN CO.')))]), values='SALES_UNIT', index='NATIONAL_DRUG_CODE', columns=['Year','Month'], aggfunc=np.sum,fill_value=0)
 
         return sap_ins_pivot
 
@@ -181,7 +214,14 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot):
 
     for ndc in df_trend_break.index:
         if Final_Output["Percentage"].loc[ndc] >= 95 and Final_Output["Percentage"].loc[ndc] <= 105:
-            Final_Output["Comment"].loc[ndc] = "Pass"
+            if all(var == 0 for var in list(df_outs_only.loc[ndc])[:-1]):
+                Final_Output["Comment"].loc[ndc] = "New NDC " + str(ndc) + ", pass via Sellsins"
+            else:
+                Final_Output["Comment"].loc[ndc] = "Pass"
+
+        elif Final_Output["Percentage"].loc[ndc] == 0:
+            Final_Output["Comment"].loc[ndc] = "SellsIns seem incomplete"
+
         else:
             variance_list = list(df_variance.loc[ndc])
             if variance_list[-1] == 0:
@@ -190,10 +230,10 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot):
                 Final_Output["Comment"].loc[ndc] = "Pass as inventory went down by " + str(variance_list[-1]) + " this month"
             elif any(var <= variance_list[-1] for var in variance_list[:-1]):
                 Final_Output["Comment"].loc[ndc] = "Pass as similar/higher inventory observed in past"
+            elif all(var == 0 for var in variance_list[:-1]):
+                Final_Output["Comment"].loc[ndc] = "New NDC " + str(ndc)
             else:
                 Final_Output["Comment"].loc[ndc] = "Case to be monitored"
-
-    # print(Final_Output)
 
     #Appending all required dataframes to csv file
     list_of_dataframes = [total_ins_df,total_outs_df,df_variance,Final_Output,pivot,df_outs]
