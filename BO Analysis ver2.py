@@ -15,6 +15,7 @@
 
 import pandas as pd
 import numpy as np
+from openpyxl import load_workbook
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -33,19 +34,19 @@ sap_ins_df = None
 
 #Data Sources Import
 try:
-    df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\Walgreens Ins.xlsx")
+    df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\Humana Ins.xlsx")
 except:
     print("Enter correct file path for Combined Ins File")
 try:
-    reference_list_df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\Reference List.xlsx")
+    reference_list_df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\Humana Reference List.xlsx")
 except:
     print("Please enter correct path for Account Names Reference List")
 try:
-    df_outs_raw = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\Walgreens BO.xlsx", skiprows=1, usecols = 'B:Q')  #skipping first row and first column
+    df_outs_raw = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\Humana BO.xlsx", skiprows=1, usecols = 'B:Q')  #skipping first row and first column
 except:
     print("Enter correct file path for BO Table File")
 try:
-    sap_ins_df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\SAP Data SEP'23.xlsx",sheet_name=1)
+    sap_ins_df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\SAP Data OCT'23.xlsx",sheet_name=1)
 except:
     print("Please enter correct path for Sapins file")
 
@@ -58,10 +59,10 @@ start_month = (date.today() - pd.offsets.DateOffset(months=13)).month
 start_year = (date.today() - pd.offsets.DateOffset(months=13)).year
 
 #For custom usage, comment it for automated updation
-data_month = 9
-data_month_year = 2023
-start_month = 9
-start_year = 2022
+# data_month = 9
+# data_month_year = 2023
+# start_month = 9
+# start_year = 2022
 
 sap_ins_pivot = None
 try:

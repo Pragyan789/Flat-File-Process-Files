@@ -26,5 +26,5 @@ def zip_code_analysis(dq_zip_code_file_path):
 
         str(zip_code_lengths).strip('[]')                                                             #Converting list to string to append into comment
 
-        comment = "with " + str(zip_code_lengths).strip('[]') + " zip format"
+        comment = "with " + str(zip_code_lengths).strip('[]') + " digit zip format"
         return comment

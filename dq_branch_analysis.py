@@ -23,7 +23,7 @@ def dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch
     except:
         print("Please enter correct path for Previous Month Branch DQ file")
 
-    if orig_df_current_month_branch_dq is not None and orig_df_previous_month_branch_dq is not None and df is not None:
+    if df is not None:
         def transform_columns(column):
             if column == 'Unnamed: 0':
                 return 'SENDER NAME'
@@ -87,45 +87,39 @@ def dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch
         # Select the 13 months' data and reorder the columns
         selected_data = table[sequence]
 
-        # # Print or use the extracted data
-        # print(selected_data)
-        # print(sequence)
+        if orig_df_current_month_branch_dq is not None and orig_df_previous_month_branch_dq is not None:
+            # df_current_month_branch_dq
+            df_current_month_branch_dq = orig_df_current_month_branch_dq[1:]
+            df_previous_month_branch_dq = orig_df_previous_month_branch_dq[1:]
+            non_trending_branches = list(set(df_current_month_branch_dq["_BRANCH_DEA_ID"]) ^ set(df_previous_month_branch_dq["_BRANCH_DEA_ID"]))
 
+            # Function to check if a branch is only non-null in the current month and null in the remaining months
+            def check_reported_first_time(row):
+                #current_month = 'Sep2023'
+                other_months = sequence[1:]
+                
+                if row[currentdata_month] != 0 and all(row[other] == 0 for other in other_months):
+                    return 'Reported for the first time'
+                elif row[currentdata_month] == 0 and all(row[other] != 0 for other in other_months):
+                    return 'Missing for the first time'
+                else:
+                    return ''
 
-        # df_current_month_branch_dq
-        df_current_month_branch_dq = orig_df_current_month_branch_dq[1:]
-        df_previous_month_branch_dq = orig_df_previous_month_branch_dq[1:]
-        non_trending_branches = list(set(df_current_month_branch_dq["_BRANCH_DEA_ID"]) ^ set(df_previous_month_branch_dq["_BRANCH_DEA_ID"]))
+            # Apply the function to each row
+            selected_data.loc[:, 'Comment']  = selected_data.apply(check_reported_first_time, axis=1)
 
-        non_trending_branches
-
-        # Function to check if a branch is only non-null in the current month and null in the remaining months
-        def check_reported_first_time(row):
-            #current_month = 'Sep2023'
-            other_months = sequence[1:]
-            
-            if row[currentdata_month] != 0 and all(row[other] == 0 for other in other_months):
-                return 'Reported for the first time'
-            elif row[currentdata_month] == 0 and all(row[other] != 0 for other in other_months):
-                return 'Missing for the first time'
-            else:
-                return ''
-
-        # Apply the function to each row
-        selected_data.loc[:, 'Comment']  = selected_data.apply(check_reported_first_time, axis=1)
-
-        #Comment formation
-        comment = ''
-        for branch in non_trending_branches:
-            if selected_data.loc[branch]['Comment']=="":
-                if selected_data.loc[branch][currentdata_month] == 0:
-                    if 0 < selected_data[selected_data.columns[1:]].loc[branch].astype(bool).sum(axis=0) < 12:
-                        comment = "Missing sales again"
-                elif selected_data.loc[branch][currentdata_month] != 0:
-                    if 0 < selected_data[selected_data.columns[1:]].loc[branch].astype(bool).sum(axis=0) < 12:
-                        comment = "Reported Sales again"
-                print(comment)
-                selected_data.loc[branch,'Comment'] = comment
+            #Comment formation
+            comment = ''
+            for branch in non_trending_branches:
+                if selected_data.loc[branch]['Comment']=="":
+                    if selected_data.loc[branch][currentdata_month] == 0:
+                        if 0 < selected_data[selected_data.columns[1:]].loc[branch].astype(bool).sum(axis=0) < 12:
+                            comment = "Missing sales again"
+                    elif selected_data.loc[branch][currentdata_month] != 0:
+                        if 0 < selected_data[selected_data.columns[1:]].loc[branch].astype(bool).sum(axis=0) < 12:
+                            comment = "Reported Sales again"
+                    # print(comment)
+                    selected_data.loc[branch,'Comment'] = comment
 
         #Export data to file
         selected_data.to_csv(r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\output2.csv")

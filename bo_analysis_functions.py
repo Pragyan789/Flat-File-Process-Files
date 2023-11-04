@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from openpyxl import load_workbook
 
 def df_ins_pivot_creation(df_ins, reference_list_df, data_month, data_month_year, start_month, start_year):
     
@@ -19,7 +20,7 @@ def df_ins_pivot_creation(df_ins, reference_list_df, data_month, data_month_year
             df_combined_ins = pd.merge(df_combined_ins, reference_list_df[reference_list_df['STATE']!='']['STATE'], on='STATE', how='inner')
 
     #Sender Name Filter
-    df_combined_ins = df_combined_ins[df_combined_ins['SENDER_NAME'].isin(['Morris and Dickson','Cardinal','CARDSD','BIOCARE','Amerisource','McKesson','OTN'])]
+    df_combined_ins = df_combined_ins[df_combined_ins['SENDER_NAME'].isin(['Amerisource','BIOCARE','Cardinal','CARDSD','Cesar Castillo','CIBD','CuraScript','DMS','Dakota Drug','FFF','HARVARD','Henry Schien','ICS','McKesson','OTN','Mckesson PB','Metro Medical','Morris and Dickson','MUTUALDRUG','Prescription Supply','Rochester Drug Cooperative','SMITH','TAP','Value Drug'])]
     
     df_combined_ins["month"] = df_combined_ins.FILE_CONTENT_START_DATE.dt.month
     df_combined_ins["year"] = df_combined_ins.FILE_CONTENT_START_DATE.dt.year
@@ -76,7 +77,7 @@ def sap_ins_pivot_creation(sap_ins_df, data_month, data_month_year, start_month,
 
 
         # Filter Names (ship_to and sold_to) to be replaced below
-        sap_ins_pivot = pd.pivot_table((sap_ins_df.loc[(sap_ins_df['SHIP_DATE'] >= start_check_date) & (sap_ins_df['SHIP_DATE'] < end_check_date) & ((sap_ins_df['SHIP_TO_PARTY'] == ('WALGREEN SPECIALTY PHARMACY #15443')) | (sap_ins_df['SHIP_TO_PARTY'] == ('WALGREENS SPECIALTY PHARMACY')) | (sap_ins_df['SHIP_TO_PARTY'] == ('WALGREEN LOUISIANA CO., INC.')) | (sap_ins_df['SHIP_TO_PARTY'] == ('JOHNS HOPKINS USFHP AT WALGREENS')) | (sap_ins_df['SHIP_TO_PARTY'] == ('WALGREEN CO.')))]), values='SALES_UNIT', index='NATIONAL_DRUG_CODE', columns=['Year','Month'], aggfunc=np.sum,fill_value=0)
+        sap_ins_pivot = pd.pivot_table((sap_ins_df.loc[(sap_ins_df['SHIP_DATE'] >= start_check_date) & (sap_ins_df['SHIP_DATE'] < end_check_date) & ((sap_ins_df['SHIP_TO_PARTY'] == ('CENTERWELL PHARMACY')) | (sap_ins_df['SHIP_TO_PARTY'] == ('CENTERWELL PHARMACY INC')))]), values='SALES_UNIT', index='NATIONAL_DRUG_CODE', columns=['Year','Month'], aggfunc=np.sum,fill_value=0)
 
         return sap_ins_pivot
 
@@ -109,7 +110,6 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot):
             s.append(sap_ins_sum)
         
         total_sap_ins_df = pd.DataFrame(s, index = NDC_pivot_sapins, columns = ['Sum of SALES_UNIT'])
-        # print(total_sap_ins_df)
 
     #Below df to be used when needed
     MIN_MAX_df = df_outs[['MIN','MAX']]
@@ -236,12 +236,11 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot):
                 Final_Output["Comment"].loc[ndc] = "Case to be monitored"
 
     #Appending all required dataframes to csv file
-    list_of_dataframes = [total_ins_df,total_outs_df,df_variance,Final_Output,pivot,df_outs]
-
-    with open('all_dataframes.csv','a') as f:
-        for df in list_of_dataframes:
-            df.to_csv(f)
-            f.write("\n")
+    list_of_dataframes = [df_variance,Final_Output,pivot,df_outs]
+    name_of_dataframes = ['BO Analysis','Comments','Combined Ins Pivot','BO Table']
+    with pd.ExcelWriter('Humana Output.xlsx', engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
+        for i,df in enumerate(list_of_dataframes):
+            df.to_excel(writer, sheet_name=name_of_dataframes[i])
 
 def unreported_ndc(ins_pivot, outs_pivot):
     unreported_ndc_pivot = ins_pivot.copy()
