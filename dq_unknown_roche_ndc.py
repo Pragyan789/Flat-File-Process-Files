@@ -31,9 +31,9 @@ def dq_unknown_roche_analysis(dq_config_file_path, dq_unknown_roche_ndc_file_pat
         config_ndc_set = set(dq_config_file_df["_NDC Num 11"].unique())
 
         if (dq_ndc_set & config_ndc_set) == set():                            #Comparing sets to find if any NDC is present in config file
-            comment = str(number_of_unique_NDC) + " NDC(s) observed previously, pass as false flag and not in config file."
+            comment = str(number_of_unique_NDC) + " NDC(s) for " + ','.join(str(int(ndc)) for ndc in dq_ndc_set) + ", observed previously, pass as false flag and not in config file."
         else:
-            comment = str(number_of_unique_NDC) + " NDC(s) observed previously, however " + str(dq_ndc_set & config_ndc_set) + " found in config file."
+            comment = str(number_of_unique_NDC) + " NDC(s) for " + ','.join(str(int(ndc)) for ndc in dq_ndc_set) + ", observed previously, however " + str(dq_ndc_set & config_ndc_set) + " found in config file."
 
         return comment
 

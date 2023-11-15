@@ -338,7 +338,7 @@ def comment_generation():
             
             if dq_indexes_dict[i] == 19:
                 unknown_roche_ndc_comment = dq_unknown_roche_ndc.dq_unknown_roche_analysis(dq_config_file_path,dq_unknown_roche_ndc_file_path)
-                df_dq_copy['Comment Formation'][i] += " " + str(current_month_value) + " flags reported across " + unknown_roche_ndc_comment
+                df_dq_copy['Comment Formation'][i] += " " + str(current_month_value) + " flag(s) reported across " + unknown_roche_ndc_comment
 
             if dq_indexes_dict[i] == 4:           #Branch analysis
                 branch_comment = dq_branch_analysis.dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch_dq_file_path,previous_month_branch_dq_file_path, output_path)
