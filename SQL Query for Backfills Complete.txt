@@ -1,0 +1,62 @@
+select * from
+(
+Select c.SENDER,
+to_char(c.FILE_SENDER_ID)FILE_SENDER_ID,
+c.FILE_CONTENT_START_DATE,
+c.RECEIVED_FILE_STATUS,
+to_char(c.RECEIVED_FILE_ID)RECEIVED_FILE_ID,
+to_char(c.LAST_NAME)LAST_NAME,to_char(c.FIRST_NAME)FIRST_NAME,
+to_char(c.ADDRESS)ADDRESS,to_char(c.ADDRESS2)ADDRESS2,
+to_char(c.CITY_NM)CITY_NM,to_char(c.ST)ST,
+to_char(c.ZIP_5)ZIP_5,to_char(c.ORIG_ZIP)ORIG_ZIP,
+c.MOST_RECENT_SHIP_DATE,
+c.INVOICE_VALUE,
+c.ACCT_DEA_ID,
+c.BRANCH_DEA_ID,
+to_char(c.NDC_NBR)NDC_NBR,
+c.PRODUCT_INFO,
+to_char(round(c.QTY_867_RAW,2)) as QTY_867_RAW,
+to_char(round(c.QTY_DISPENSED,3))as QTY_DISPENSED,
+to_char(round(c.EQ_QTY,3)) as EQ_QTY,
+c.EQ_FCTR,c.IMS_QTY,c.BRKABLE_CD,
+to_char(c.TRANSACTION_ID) as CLD_DETAIL_COOKED_ID
+,c.IMS_RX_ID,c.ETL_FILE_NAME
+FROM CLOAD_ETL.VW_CLOAD_DATA c
+WHERE c.received_file_id in ('156462')
+) cm
+join
+(
+Select c.SENDER,
+to_char(c.FILE_SENDER_ID)FILE_SENDER_ID,
+c.FILE_CONTENT_START_DATE,
+c.RECEIVED_FILE_STATUS,
+to_char(c.RECEIVED_FILE_ID)RECEIVED_FILE_ID,
+to_char(c.LAST_NAME)LAST_NAME,to_char(c.FIRST_NAME)FIRST_NAME,
+to_char(c.ADDRESS)ADDRESS,to_char(c.ADDRESS2)ADDRESS2,
+to_char(c.CITY_NM)CITY_NM,to_char(c.ST)ST,
+to_char(c.ZIP_5)ZIP_5,to_char(c.ORIG_ZIP)ORIG_ZIP,
+c.MOST_RECENT_SHIP_DATE,
+c.INVOICE_VALUE,
+c.ACCT_DEA_ID,
+c.BRANCH_DEA_ID,
+to_char(c.NDC_NBR)NDC_NBR,
+c.PRODUCT_INFO,
+to_char(round(c.QTY_867_RAW,2)) as QTY_867_RAW,
+to_char(round(c.QTY_DISPENSED,3))as QTY_DISPENSED,
+to_char(round(c.EQ_QTY,3)) as EQ_QTY,
+c.EQ_FCTR,c.IMS_QTY,c.BRKABLE_CD,
+to_char(c.TRANSACTION_ID) as CLD_DETAIL_COOKED_ID
+,c.IMS_RX_ID,c.ETL_FILE_NAME
+FROM CLOAD_ETL.VW_CLOAD_DATA c
+WHERE c.received_file_id in ('153145', '153617', '154256', '154619', '155262', '155631', '155880', '156172')
+) pm
+on cm.invoice_value = pm.invoice_value and
+cm.MOST_RECENT_SHIP_DATE = pm.MOST_RECENT_SHIP_DATE and
+cm.LAST_NAME = pm.LAST_NAME and
+cm.FIRST_NAME = pm.FIRST_NAME and
+cm.ADDRESS = pm.ADDRESS and
+cm.BRANCH_DEA_ID = pm.BRANCH_DEA_ID and
+cm.NDC_NBR = pm.NDC_NBR and
+cm.PRODUCT_INFO = pm.PRODUCT_INFO and
+cm.QTY_DISPENSED = pm.QTY_DISPENSED
+where extract(month from cm.most_recent_ship_date) <> 9
