@@ -40,40 +40,6 @@ raw_data_file_path = list(df.loc['raw_data_file_path'])[0]
 ndc_factoring_values_file_path = list(df.loc['ndc_factoring_values_file_path'])[0]
 output_path = list(df.loc['output_path'])[0]
 
-#Source File Paths; to be modified according to user
-# main_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD_SEP23.xlsx"
-# new_month_dq_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD DQ.xlsx"
-# supplier_names_file_path = r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Flat File Process Files\Supplier Names TPC.xlsx"
-# tpc_file_path = r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Flat File Process Files\TPC File.xlsx"
-
-# #Branch file paths
-# branch_report_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD Branch.xlsx"
-# current_month_branch_dq_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD current month branch.xlsx"
-# previous_month_branch_dq_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD old month branch.xlsx"
-
-# #Qty MIN/MAX file paths
-# txn_count_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD Txn Count.xlsx"
-# dq_qty_min_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD QTY_MIN DQ.xlsx"
-# dq_qty_max_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD QTY_MAX DQ.xlsx"
-
-# #Zip Code file path
-# dq_zip_code_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD ZIP.xlsx"
-
-# #Unknown Roche NDC file path
-# dq_unknown_roche_ndc_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD Unknown NDC.xlsx"
-# dq_config_file_path = r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Flat File Process Files\DQ Config File.xlsx"
-
-# #UOM Inconsistencies file path
-# dq_uom_inconsistencies_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD UOM Inconsistenies DQ.xlsx"
-# raw_data_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD Raw data.xlsx"
-# ndc_factoring_values_file_path = r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Flat File Process Files\NDC Factoring Values.xlsx"
-
-
-### *not needed* Backfill paths
-# dq_backfills_data_path = r"C:\Users\pragyan.agrawal\Downloads\Pharmacare Backfills New Month.xlsx"
-# sql_backfills_path = r"C:\Users\pragyan.agrawal\Downloads\Pharmacare Backfills SQL.xlsx"
-
-
 #Below code to extract File_ID from TPC File based on Supplier name
 #Two source files are necessary, one for mapping to names of suppliers exactly as present in TPC File, and one TPC File itself
 #===
