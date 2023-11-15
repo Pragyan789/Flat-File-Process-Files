@@ -14,6 +14,7 @@ import dq_zip_code_analysis
 import dq_unknown_roche_ndc
 import dq_uom_inconsistencies
 #import dq_backfill_analysis
+
 #IMP: Code inside ***/*** block will need to be modified if source file format is changed
 #***
 
@@ -49,7 +50,6 @@ ndc_factoring_values_file_path = r"C:\Users\pragyan.agrawal\OneDrive - Incedo Te
 # dq_backfills_data_path = r"C:\Users\pragyan.agrawal\Downloads\Pharmacare Backfills New Month.xlsx"
 # sql_backfills_path = r"C:\Users\pragyan.agrawal\Downloads\Pharmacare Backfills SQL.xlsx"
 
-
 #Below code to extract File_ID from TPC File based on Supplier name
 #Two source files are necessary, one for mapping to names of suppliers exactly as present in TPC File, and one TPC File itself
 #===
@@ -68,6 +68,7 @@ except:
 
 supplier_names_df = supplier_names_df.set_index('File Name')
 supplier_name = supplier_names_df[supplier_names_df.columns[0]][supplier_name.lower()]    #extracting supplier name as present in TPC File
+supplier_category = supplier_names_df['Category'][supplier_name.lower()]
 
 try:
     tpc_df = pd.read_excel(tpc_file_path)
@@ -86,6 +87,7 @@ except:
     print('Path for Main file Incorrect/Missing')
 
 #Extracting DQ Table only from first sheet
+row_num = [0]
 try:
     row_num = df[df[df.columns[0]] == 'Validation Rule Description History'].index
 except:
@@ -152,8 +154,13 @@ def comment_generation():
     #Creating dictionary for storing threshold limits for each parameter
     param_dq_threshold_vals_dict = {}
     threshold_list = [3,3,10,3,3,3,3,3,10,10,10,0,0,3,0,0,3,3,3,0]
+    ws_threshold_list = [3,3,3,3,3,3,3,3,3,3,3,0,0,3,0,0,3,3,2,0]
+    
     for i,j in enumerate(df_dq.index[1:]):
-        param_dq_threshold_vals_dict[j] = threshold_list[i]
+        if supplier_category.lower() in ['sp']:
+            param_dq_threshold_vals_dict[j] = threshold_list[i]
+        elif supplier_category.lower() in ['w']:
+            param_dq_threshold_vals_dict[j] = ws_threshold_list[i]
 
     #Comment content variables
     threshold_check = ''
@@ -163,10 +170,11 @@ def comment_generation():
     for i in df_dq.index[1:]:                                          #Parameter index starting from 1, 'i' is parameter
         param_value_dict = {}
 
-        if dq_indexes_dict[i] in [1]:#,15,16,19,20]:                      #BACKFILLS ANALYSIS
+        #Flags where threshold does not matter, even 1 flag is to be checked
+        if dq_indexes_dict[i] in [1]:                                     #BACKFILLS ANALYSIS
             if df_dq[df_dq.columns[-1]][i] != 0:
                 current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])
-
+                
                 df_dq_copy['Comment Formation'][i] = str(current_month_value) + " Backfills present, run designated SQL query to find removable duplicates."
             
         elif dq_indexes_dict[i] in [15]:                                  #QTY MIN ANALYSIS
@@ -216,57 +224,115 @@ def comment_generation():
     #         if dq_indexes_dict[i] in [4]:
     #             dq_branch_analysis(df_dq) 
         
+
         #Entering Condition for Recurring flags
+        
         elif df_dq[df_dq.columns[-1]][i] != 0 and df_dq[df_dq.columns[-2]][i] != 0:
-            current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])     #Extracting integer value from string of current month
-            previous_month_value = int(df_dq[df_dq.columns[-2]][i][df_dq[df_dq.columns[-2]][i].find("(")+1:df_dq[df_dq.columns[-2]][i].find("/")])
-            #Calculating variance
-            calculated_variance = (1 - (min(current_month_value,previous_month_value)/max(current_month_value,previous_month_value)))*100
-            df_dq_copy['Variance'][i] = calculated_variance
-            
-            #Finding Trending/Close value
-            for col in df_dq.columns[:-1]:
-                #Assigning month to each month values for a parameter and storing it as keys in dictionary, 0 if not present
-                if df_dq[col][i]==0:
-                    param_value_dict[df_dq[col]['Month']] = 0
-                else:
-                    param_value_dict[df_dq[col]['Month']]=int(df_dq[col][i][df_dq[col][i].find("(")+1:df_dq[col][i].find("/")])
-            
-            if calculated_variance <= param_dq_threshold_vals_dict[i]:
-                threshold_check = 'Within' 
-            else:
-                threshold_check = 'Over'
-            
-            #Trend/close check
-            match_index = None
-            trend_val = None
-            trend_flag = False
-            for iterable, val in enumerate(param_value_dict.values()):
-                if current_month_value == val:
-                    match_index = iterable                             #index of trending value in dictionary, gets updated to the most recent value
-                    trend_val = val                                    #Value itself
-                    trend_flag = True
-            if trend_flag == True:
-                match_list = [list(param_value_dict.keys())[match_index]]   #fetches month corresponding to the index stored in 'match_index'
-                #comment generation:
-                comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, trending with ' + str(match_list[0]) + '(' + str(current_month_value) + ')'
-            else:
-                last_15_values_list = list(param_value_dict.values())[-16:]
-                variance = 1
-                close_index = None
-                close_val = None
-                close_flag = False
-                for iterable, val in enumerate(last_15_values_list):                 #Analyzing upto last 15 months
-                    if val > 0:                                                      #Getting minimum variance value wrt last 15 months
-                        if variance >= abs((current_month_value/val)-1):
-                            variance = abs((current_month_value/val)-1)
-                            close_index = iterable
-                            close_val = val
-                            close_flag = True
-                close_list = [list(param_value_dict.keys())[-16:][close_index]]
-                #comment generation:
-                comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, close in # of flags with ' + str(close_list[0]) + '(' + str(close_val) + ')'
+            if supplier_category.lower() in ['sp']:
+                current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])     #Extracting integer value from string of current month
+                previous_month_value = int(df_dq[df_dq.columns[-2]][i][df_dq[df_dq.columns[-2]][i].find("(")+1:df_dq[df_dq.columns[-2]][i].find("/")])
+                #Calculating variance
+                calculated_variance = (1 - (min(current_month_value,previous_month_value)/max(current_month_value,previous_month_value)))*100
+                df_dq_copy['Variance'][i] = calculated_variance
                 
+                #Finding Trending/Close value
+                for col in df_dq.columns[:-1]:
+                    #Assigning month to each month values for a parameter and storing it as keys in dictionary, 0 if not present
+                    if df_dq[col][i]==0:
+                        param_value_dict[df_dq[col]['Month']] = 0
+                    else:
+                        param_value_dict[df_dq[col]['Month']]=int(df_dq[col][i][df_dq[col][i].find("(")+1:df_dq[col][i].find("/")])
+                
+                if calculated_variance <= param_dq_threshold_vals_dict[i]:
+                    threshold_check = 'Within' 
+                else:
+                    threshold_check = 'Over'
+                
+                #Trend/close check
+                match_index = None
+                trend_val = None
+                trend_flag = False
+                for iterable, val in enumerate(param_value_dict.values()):
+                    if current_month_value == val:
+                        match_index = iterable                             #index of trending value in dictionary, gets updated to the most recent value
+                        trend_val = val                                    #Value itself
+                        trend_flag = True
+                if trend_flag == True:
+                    match_list = [list(param_value_dict.keys())[match_index]]   #fetches month corresponding to the index stored in 'match_index'
+                    #comment generation:
+                    comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, trending with ' + str(match_list[0]) + '(' + str(current_month_value) + ')'
+                else:
+                    last_15_values_list = list(param_value_dict.values())[-16:]
+                    variance = 1
+                    close_index = None
+                    close_val = None
+                    close_flag = False
+                    for iterable, val in enumerate(last_15_values_list):                 #Analyzing upto last 15 months
+                        if val > 0:                                                      #Getting minimum variance value wrt last 15 months
+                            if variance >= abs((current_month_value/val)-1):
+                                variance = abs((current_month_value/val)-1)
+                                close_index = iterable
+                                close_val = val
+                                close_flag = True
+                    close_list = [list(param_value_dict.keys())[-16:][close_index]]
+                    #comment generation:
+                    comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, close in # of flags with ' + str(close_list[0]) + '(' + str(close_val) + ')'
+                
+            elif supplier_category.lower() in ['w']:
+                # Extracting percentages in case of Wholesalers/SDs
+                ws_percentage_current_month = int(df_dq[df_dq.columns[-1]][i][:df_dq[df_dq.columns[-1]][i].find("%")])
+                ws_percentage_previous_month = int(df_dq[df_dq.columns[-2]][i][:df_dq[df_dq.columns[-2]][i].find("%")])
+                
+                current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])
+                previous_month_value = int(df_dq[df_dq.columns[-2]][i][df_dq[df_dq.columns[-2]][i].find("(")+1:df_dq[df_dq.columns[-2]][i].find("/")])
+                
+                #Calculating variance
+                calculated_variance_ws = abs(ws_percentage_current_month - ws_percentage_previous_month)
+                df_dq_copy['Variance'][i] = calculated_variance_ws
+                
+                #Finding Trending/Close value
+                for col in df_dq.columns[:-1]:
+                    #Assigning month to each month values for a parameter and storing it as keys in dictionary, 0 if not present
+                    if df_dq[col][i]==0:
+                        param_value_dict[df_dq[col]['Month']] = 0
+                    else:
+                        param_value_dict[df_dq[col]['Month']]=int(df_dq[col][i][df_dq[col][i].find("(")+1:df_dq[col][i].find("/")])
+                
+                if calculated_variance_ws <= param_dq_threshold_vals_dict[i]:
+                    threshold_check = 'Within' 
+                else:
+                    threshold_check = 'Over'
+                
+                #Trend/close check
+                match_index = None
+                trend_val = None
+                trend_flag = False
+                for iterable, val in enumerate(param_value_dict.values()):
+                    if current_month_value == val:
+                        match_index = iterable                             #index of trending value in dictionary, gets updated to the most recent value
+                        trend_val = val                                    #Value itself
+                        trend_flag = True
+                if trend_flag == True:
+                    match_list = [list(param_value_dict.keys())[match_index]]   #fetches month corresponding to the index stored in 'match_index'
+                    #comment generation:
+                    comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, trending with ' + str(match_list[0]) + '(' + str(current_month_value) + ')'
+                else:
+                    last_15_values_list = list(param_value_dict.values())[-16:]
+                    variance = 1
+                    close_index = None
+                    close_val = None
+                    close_flag = False
+                    for iterable, val in enumerate(last_15_values_list):                 #Analyzing upto last 15 months
+                        if val > 0:                                                      #Getting minimum variance value wrt last 15 months
+                            if variance >= abs((current_month_value/val)-1):
+                                variance = abs((current_month_value/val)-1)
+                                close_index = iterable
+                                close_val = val
+                                close_flag = True
+                    close_list = [list(param_value_dict.keys())[-16:][close_index]]
+                    #comment generation:
+                    comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, close in # of flags with ' + str(close_list[0]) + '(' + str(close_val) + ')'
+
             df_dq_copy['Comment Formation'][i] = comment
             
             if dq_indexes_dict[i] == 6:
@@ -281,11 +347,15 @@ def comment_generation():
 
             if dq_indexes_dict[i] == 4:
                 dq_branch_analysis.dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch_dq_file_path,previous_month_branch_dq_file_path)
-            
-        elif df_dq[df_dq.columns[-1]][i] != 0 and df_dq[df_dq.columns[-2]][i] == 0 and dq_indexes_dict[i] not in [1,15,16,18,19,20]:
-            current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])     #Extracting integer value from string of current month
-            
-            df_dq_copy['Comment Formation'][i] = 'Trend Break, ' + str(current_month_value) + ' flag(s) reported'
-    df_dq_copy.to_csv(r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\output1.csv")
+
+            elif df_dq[df_dq.columns[-1]][i] != 0 and df_dq[df_dq.columns[-2]][i] == 0 and dq_indexes_dict[i] not in [1,15,16,18,19,20]:
+                current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])     #Extracting integer value from string of current month
+                
+                df_dq_copy['Comment Formation'][i] = 'Trend Break, ' + str(current_month_value) + ' flag(s) reported'
+    
+    #df_dq_copy.to_csv(r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\output1.csv")
+    
+    with pd.ExcelWriter('CIBD_SEP23.xlsx', engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
+        df_dq_copy.to_excel(writer, sheet_name=supplier_name + " DQ")
 
 comment_generation()

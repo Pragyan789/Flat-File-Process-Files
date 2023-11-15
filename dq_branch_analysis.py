@@ -5,11 +5,12 @@ from datetime import datetime
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
-df = None
-orig_df_current_month_branch_dq = None
-orig_df_previous_month_branch_dq = None
-
 def dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch_dq_file_path,previous_month_branch_dq_file_path):
+    
+    df = None
+    orig_df_current_month_branch_dq = None
+    orig_df_previous_month_branch_dq = None
+
     try:
         df = pd.read_excel(branch_report_file_path)
     except:

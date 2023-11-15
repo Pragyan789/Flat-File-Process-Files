@@ -4,11 +4,12 @@ import numpy as np
 from datetime import datetime
 from datetime import date
 
-orig_dq_uom_inconsistencies_df = None
-raw_data_df = None
-ndc_factoring_values_df = None
-
 def dq_uom_inconsistencies_analysis(dq_uom_inconsistencies_file_path, raw_data_file_path, ndc_factoring_values_file_path):
+    
+    orig_dq_uom_inconsistencies_df = None
+    raw_data_df = None
+    ndc_factoring_values_df = None
+    
     try:
         orig_dq_uom_inconsistencies_df = pd.read_excel(dq_uom_inconsistencies_file_path)
     except:

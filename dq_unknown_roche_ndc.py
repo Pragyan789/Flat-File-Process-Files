@@ -4,10 +4,11 @@ import numpy as np
 from datetime import datetime
 from datetime import date
 
-orig_dq_unknown_roche_ndc_df = None
-dq_config_file_df = None
-
 def dq_unknown_roche_analysis(dq_config_file_path, dq_unknown_roche_ndc_file_path):
+    
+    orig_dq_unknown_roche_ndc_df = None
+    dq_config_file_df = None
+
     try:
         orig_dq_unknown_roche_ndc_df = pd.read_excel(dq_unknown_roche_ndc_file_path)
     except:

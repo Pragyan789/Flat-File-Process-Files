@@ -4,9 +4,9 @@ import numpy as np
 from datetime import datetime
 from datetime import date
 
-orig_dq_zip_code_df = None
-
 def zip_code_analysis(dq_zip_code_file_path):
+    
+    orig_dq_zip_code_df = None
     
     comment = ""
     try:
