@@ -5,14 +5,15 @@ from datetime import datetime
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
-def dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch_dq_file_path,previous_month_branch_dq_file_path):
+def dq_non_trending_branch_analysis(branch_report_file_path, current_month_branch_dq_file_path, previous_month_branch_dq_file_path, output_path):
     
     df = None
+    branch_df = None
     orig_df_current_month_branch_dq = None
     orig_df_previous_month_branch_dq = None
 
     try:
-        df = pd.read_excel(branch_report_file_path)
+        branch_df = pd.read_excel(branch_report_file_path)
     except:
         print("Please enter correct path for Branch Report file")
     try:
@@ -24,7 +25,10 @@ def dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch
     except:
         print("Please enter correct path for Previous Month Branch DQ file")
 
-    if df is not None:
+    if branch_df is not None:
+        
+        df = branch_df.copy()
+
         def transform_columns(column):
             if column == 'Unnamed: 0':
                 return 'SENDER NAME'
@@ -87,25 +91,33 @@ def dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch
 
         # Select the 13 months' data and reorder the columns
         selected_data = table[sequence]
-
+        
+        comment_distinct_branch = ''
+        
         if orig_df_current_month_branch_dq is not None and orig_df_previous_month_branch_dq is not None:
             # df_current_month_branch_dq
             df_current_month_branch_dq = orig_df_current_month_branch_dq[1:]
             df_previous_month_branch_dq = orig_df_previous_month_branch_dq[1:]
             non_trending_branches = list(set(df_current_month_branch_dq["_BRANCH_DEA_ID"]) ^ set(df_previous_month_branch_dq["_BRANCH_DEA_ID"]))
 
+            msft = []
+            rsft = []
+            msa = []
+            rsa = []
+            
             # Function to check if a branch is only non-null in the current month and null in the remaining months
             def check_reported_first_time(row):
-                #current_month = 'Sep2023'
                 other_months = sequence[1:]
                 
                 if row[currentdata_month] != 0 and all(row[other] == 0 for other in other_months):
-                    return 'Reported for the first time'
+                    rsft.append(row.name)
+                    return 'Reported sales for the first time'
                 elif row[currentdata_month] == 0 and all(row[other] != 0 for other in other_months):
-                    return 'Missing for the first time'
+                    msft.append(row.name)
+                    return 'Missing sales for the first time'
                 else:
                     return ''
-
+                
             # Apply the function to each row
             selected_data.loc[:, 'Comment']  = selected_data.apply(check_reported_first_time, axis=1)
 
@@ -114,13 +126,24 @@ def dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch
             for branch in non_trending_branches:
                 if selected_data.loc[branch]['Comment']=="":
                     if selected_data.loc[branch][currentdata_month] == 0:
-                        if 0 < selected_data[selected_data.columns[1:]].loc[branch].astype(bool).sum(axis=0) < 12:
+                        if 1 < selected_data[selected_data.columns[1:]].loc[branch].astype(bool).sum(axis=0) < 12:
+                            msa.append(branch)
                             comment = "Missing sales again"
+                        elif selected_data[selected_data.columns[1:]].loc[branch].astype(bool).sum(axis=0) == 1:
+                            msft.append(branch)
+                            comment = "Missing sales for the first time"
                     elif selected_data.loc[branch][currentdata_month] != 0:
                         if 0 < selected_data[selected_data.columns[1:]].loc[branch].astype(bool).sum(axis=0) < 12:
+                            rsa.append(branch)
                             comment = "Reported Sales again"
                     # print(comment)
                     selected_data.loc[branch,'Comment'] = comment
 
+            comment_distinct_branch = "Branch(es) with DEA ID:" + ",".join(str(branch) for branch in rsft) + " - Reported Sales for the first Time; " + ",".join(str(branch) for branch in msft) + " - Missing Sales for the first Time; " + ",".join(str(branch) for branch in msa) + " - Missing Sales Again, however gaps observed in past; " + ",".join(str(branch) for branch in rsa) + " - Reported sales again, gaps observed in past."
+        
         #Export data to file
-        selected_data.to_csv(r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\output2.csv")
+        with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
+            branch_df.to_excel(writer, sheet_name="Branch Report")
+            selected_data.to_excel(writer, sheet_name="Branch Pivot Analysis")
+        
+        return comment_distinct_branch

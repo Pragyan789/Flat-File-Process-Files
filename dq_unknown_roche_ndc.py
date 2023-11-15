@@ -19,6 +19,8 @@ def dq_unknown_roche_analysis(dq_config_file_path, dq_unknown_roche_ndc_file_pat
     except:
         print("Please enter correct path for DQ Config file")
 
+    comment = ''
+    
     if orig_dq_unknown_roche_ndc_df is not None and dq_config_file_df is not None:
         dq_unknown_roche_ndc_df = orig_dq_unknown_roche_ndc_df[1:]
 

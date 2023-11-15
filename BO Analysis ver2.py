@@ -33,23 +33,27 @@ reference_list_df = None
 df_outs_raw = None
 sap_ins_df = None
 
-supplier_names_file_path = r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Flat File Process Files\Supplier Names TPC.xlsx"
+df_input = pd.read_excel(r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Flat File Process Files\Input Paths.xlsx")
+df_input = df_input.set_index('Variable Name')
+df_input = df_input.fillna("")
+
+supplier_names_file_path = list(df_input.loc['supplier_names_file_path'])[0]
 
 #Data Sources Import
 try:
-    df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\CIBD Ins.xlsx")
+    df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\RELIANCERX Ins.xlsx")
 except:
     print("Enter correct file path for Combined Ins File")
 try:
-    reference_list_df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\CIBD Reference List.xlsx")
+    reference_list_df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\RELIANCERX Reference List.xlsx")
 except:
     print("Please enter correct path for Account Names Reference List")
 try:
-    df_outs_raw = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\CIBD BO.xlsx", skiprows=1, usecols = 'B:Q')  #skipping first row and first column
+    df_outs_raw = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\RELIANCERX BO.xlsx", skiprows=1, usecols = 'B:Q')  #skipping first row and first column
 except:
     print("Enter correct file path for BO Table File")
 try:
-    sap_ins_df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\SAP Data OCT'23.xlsx",sheet_name=1)
+    sap_ins_df# = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\SAP Data OCT'23.xlsx",sheet_name=1)
 except:
     print("Please enter correct path for Sapins file")
 try:
@@ -93,12 +97,14 @@ if df_outs_raw is not None:
         print("Outs Pivot creation Function did not execute properly")
 
 # Hardcoded Input (File Name)
-supplier_name = "CIBD"
+supplier_name = list(df.loc['supplier_name'])[0]
 supplier_names_df = supplier_names_df.set_index('File Name')
 supplier_name = supplier_names_df[supplier_names_df.columns[0]][supplier_name.lower()]
 
+output_path = list(df.loc['output_path'])[0]
+
 #Calling main analysis function
-bo_analysis_functions.bo_and_sap_analysis(ins_pivot, outs_pivot, sap_ins_pivot, supplier_name)
+bo_analysis_functions.bo_and_sap_analysis(ins_pivot, outs_pivot, sap_ins_pivot, supplier_name, output_path)
 
 if df is not None and df_outs_raw is not None:
-    bo_analysis_functions.unreported_ndc(ins_pivot, outs_pivot)
+    bo_analysis_functions.unreported_ndc(ins_pivot, outs_pivot, output_path)

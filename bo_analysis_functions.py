@@ -91,9 +91,11 @@ def sap_ins_pivot_creation(sap_ins_df, data_month, data_month_year, start_month,
         sap_ins_pivot = pd.pivot_table((sap_ins_df.loc[(sap_ins_df['SHIP_DATE'] >= start_check_date) & (sap_ins_df['SHIP_DATE'] <= end_check_date) & ((sap_ins_df['SHIP_TO_PARTY'] == ('CIBD DISTRIBUTORS')))]), values='SALES_UNIT', index='NATIONAL_DRUG_CODE', columns=['Year','Month'], aggfunc=np.sum,fill_value=0)
 
         return sap_ins_pivot
+    else:
+        return None
 
 
-def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name):
+def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name, output_path):
     print(4)
     
     #List of Sap only analysis suppliers
@@ -156,13 +158,13 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name):
     df_outs_modified["Number_of_zeroes"] = None
     df_outs_modified["Number_of_zeroes"] = (df_outs_modified.iloc[:,-7:-2] == 0).sum(axis=1)    # Hardcoded index is used, might raise issues in future
 
+    #'df_trend_break' : this df contains only those NDCs which are required to be analyzed further
     if supplier_name in sap_only_suppliers:
         df_trend_break = pd.merge(total_outs_df,df_outs_modified,on="NDC")
     else:
-    #'df_trend_break' : this df contains only those NDCs which are required to be analyzed further
         df_trend_break = pd.merge(total_outs_df,df_outs_modified,on="NDC").query("Trend_Break == True and Number_of_zeroes <= 4")
+    
     df_trend_break = pd.DataFrame(df_trend_break["Sum of QTY_DISPENSED"])   # inserting only 'Sum of QTY_DISPENSED' column
-    # print(df_trend_break)
 
     #Following block of code is for calculating month wise variance
     df_outs_only = df_outs_modified.drop(["Trend_Break","Number_of_zeroes"],axis=1)
@@ -288,7 +290,7 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name):
     list_of_dataframes = [bo_analysis_df,pivot,df_outs]
     name_of_dataframes = ['BO Analysis','Combined Ins Pivot','BO Table']
     print("x")
-    with pd.ExcelWriter('CIBD_SEP23.xlsx', engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
+    with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
         for i,df in enumerate(list_of_dataframes):
             try:
                 df.to_excel(writer, sheet_name=name_of_dataframes[i])
@@ -296,7 +298,7 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name):
                 print("A DF could not be printed to excel")
     print("z")
 
-def unreported_ndc(ins_pivot, outs_pivot):
+def unreported_ndc(ins_pivot, outs_pivot, output_path):
     unreported_ndc_pivot = ins_pivot.copy()
 
     for ndc in unreported_ndc_pivot.index:
@@ -315,7 +317,10 @@ def unreported_ndc(ins_pivot, outs_pivot):
         else:
             ins_pivot.loc[unr_ndc,"Comment"] = "Need to Email POC"
     
-    with open('unreported_ndcs.csv','a') as f:
-        ins_pivot.to_csv(f)
+    with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
+        ins_pivot.to_excel(writer, sheet_name="Unreported NDCs")
+
+    # with open('unreported_ndcs_reliancerx.csv','a') as f:
+    #     ins_pivot.to_csv(f)
 
     return ins_pivot

@@ -18,42 +18,66 @@ import dq_uom_inconsistencies
 #IMP: Code inside ***/*** block will need to be modified if source file format is changed
 #***
 
+df = pd.read_excel(r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Flat File Process Files\Input Paths.xlsx")
+df = df.set_index('Variable Name')
+df = df.fillna("")
+
+main_file_path = list(df.loc['main_file_path'])[0]
+new_month_dq_file_path = list(df.loc['new_month_dq_file_path'])[0]
+supplier_names_file_path = list(df.loc['supplier_names_file_path'])[0]
+tpc_file_path = list(df.loc['tpc_file_path'])[0]
+branch_report_file_path = list(df.loc['branch_report_file_path'])[0]
+current_month_branch_dq_file_path = list(df.loc['current_month_branch_dq_file_path'])[0]
+previous_month_branch_dq_file_path = list(df.loc['previous_month_branch_dq_file_path'])[0]
+txn_count_file_path = list(df.loc['txn_count_file_path'])[0]
+dq_qty_min_file_path = list(df.loc['dq_qty_min_file_path'])[0]
+dq_qty_max_file_path = list(df.loc['dq_qty_max_file_path'])[0]
+dq_zip_code_file_path = list(df.loc['dq_zip_code_file_path'])[0]
+dq_unknown_roche_ndc_file_path = list(df.loc['dq_unknown_roche_ndc_file_path'])[0]
+dq_config_file_path = list(df.loc['dq_config_file_path'])[0]
+dq_uom_inconsistencies_file_path = list(df.loc['dq_uom_inconsistencies_file_path'])[0]
+raw_data_file_path = list(df.loc['raw_data_file_path'])[0]
+ndc_factoring_values_file_path = list(df.loc['ndc_factoring_values_file_path'])[0]
+output_path = list(df.loc['output_path'])[0]
+
 #Source File Paths; to be modified according to user
-main_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD_SEP23.xlsx"
-new_month_dq_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD DQ.xlsx"
-supplier_names_file_path = r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Flat File Process Files\Supplier Names TPC.xlsx"
-tpc_file_path = r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Flat File Process Files\TPC File.xlsx"
+# main_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD_SEP23.xlsx"
+# new_month_dq_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD DQ.xlsx"
+# supplier_names_file_path = r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Flat File Process Files\Supplier Names TPC.xlsx"
+# tpc_file_path = r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Flat File Process Files\TPC File.xlsx"
 
-#Branch file paths
-branch_report_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD Branch.xlsx"
-current_month_branch_dq_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD current month branch.xlsx"
-previous_month_branch_dq_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD old month branch.xlsx"
+# #Branch file paths
+# branch_report_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD Branch.xlsx"
+# current_month_branch_dq_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD current month branch.xlsx"
+# previous_month_branch_dq_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD old month branch.xlsx"
 
-#Qty MIN/MAX file paths
-txn_count_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD Txn Count.xlsx"
-dq_qty_min_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD QTY_MIN DQ.xlsx"
-dq_qty_max_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD QTY_MAX DQ.xlsx"
+# #Qty MIN/MAX file paths
+# txn_count_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD Txn Count.xlsx"
+# dq_qty_min_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD QTY_MIN DQ.xlsx"
+# dq_qty_max_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD QTY_MAX DQ.xlsx"
 
-#Zip Code file path
-dq_zip_code_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD ZIP.xlsx"
+# #Zip Code file path
+# dq_zip_code_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD ZIP.xlsx"
 
-#Unknown Roche NDC file path
-dq_unknown_roche_ndc_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD Unknown NDC.xlsx"
-dq_config_file_path = r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Flat File Process Files\DQ Config File.xlsx"
+# #Unknown Roche NDC file path
+# dq_unknown_roche_ndc_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD Unknown NDC.xlsx"
+# dq_config_file_path = r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Flat File Process Files\DQ Config File.xlsx"
 
-#UOM Inconsistencies file path
-dq_uom_inconsistencies_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD UOM Inconsistenies DQ.xlsx"
-raw_data_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD Raw data.xlsx"
-ndc_factoring_values_file_path = r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Flat File Process Files\NDC Factoring Values.xlsx"
+# #UOM Inconsistencies file path
+# dq_uom_inconsistencies_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD UOM Inconsistenies DQ.xlsx"
+# raw_data_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD Raw data.xlsx"
+# ndc_factoring_values_file_path = r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Flat File Process Files\NDC Factoring Values.xlsx"
 
-#Backfill paths
+
+### *not needed* Backfill paths
 # dq_backfills_data_path = r"C:\Users\pragyan.agrawal\Downloads\Pharmacare Backfills New Month.xlsx"
 # sql_backfills_path = r"C:\Users\pragyan.agrawal\Downloads\Pharmacare Backfills SQL.xlsx"
+
 
 #Below code to extract File_ID from TPC File based on Supplier name
 #Two source files are necessary, one for mapping to names of suppliers exactly as present in TPC File, and one TPC File itself
 #===
-supplier_name = 'CIBD'
+supplier_name = list(df.loc['supplier_name'])[0]
 
 supplier_names_df = None
 tpc_df = None
@@ -89,6 +113,7 @@ except:
 #Extracting DQ Table only from first sheet
 row_num = [0]
 try:
+    #Hardcoded value
     row_num = df[df[df.columns[0]] == 'Validation Rule Description History'].index
 except:
     row_num[0] = 1
@@ -100,6 +125,7 @@ except:
 
 df['Validation Rule Description History'][0] = 'Month'
 
+#hardcoded value
 last_column_dq = np.argwhere(df.values=='Comments')[0][1]
 
 #slicing dataframe with last row and last column
@@ -260,7 +286,7 @@ def comment_generation():
                 if trend_flag == True:
                     match_list = [list(param_value_dict.keys())[match_index]]   #fetches month corresponding to the index stored in 'match_index'
                     #comment generation:
-                    comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, trending with ' + str(match_list[0]) + '(' + str(current_month_value) + ')'
+                    comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, trending with ' + str(match_list[0]) + '(' + str(current_month_value) + ').'
                 else:
                     last_15_values_list = list(param_value_dict.values())[-16:]
                     variance = 1
@@ -276,7 +302,7 @@ def comment_generation():
                                 close_flag = True
                     close_list = [list(param_value_dict.keys())[-16:][close_index]]
                     #comment generation:
-                    comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, close in # of flags with ' + str(close_list[0]) + '(' + str(close_val) + ')'
+                    comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, close in # of flags with ' + str(close_list[0]) + '(' + str(close_val) + ').'
                 
             elif supplier_category.lower() in ['w']:
                 # Extracting percentages in case of Wholesalers/SDs
@@ -315,7 +341,7 @@ def comment_generation():
                 if trend_flag == True:
                     match_list = [list(param_value_dict.keys())[match_index]]   #fetches month corresponding to the index stored in 'match_index'
                     #comment generation:
-                    comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, trending with ' + str(match_list[0]) + '(' + str(current_month_value) + ')'
+                    comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, trending with ' + str(match_list[0]) + '(' + str(current_month_value) + ').'
                 else:
                     last_15_values_list = list(param_value_dict.values())[-16:]
                     variance = 1
@@ -331,31 +357,31 @@ def comment_generation():
                                 close_flag = True
                     close_list = [list(param_value_dict.keys())[-16:][close_index]]
                     #comment generation:
-                    comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, close in # of flags with ' + str(close_list[0]) + '(' + str(close_val) + ')'
+                    comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, close in # of flags with ' + str(close_list[0]) + '(' + str(close_val) + ').'
 
             df_dq_copy['Comment Formation'][i] = comment
             
             if dq_indexes_dict[i] == 6:
-                df_dq_copy['Comment Formation'][i] += ", and matching with BO(" + str(current_month_value) + "). Pass."
+                df_dq_copy['Comment Formation'][i] += " Matching with BO(" + str(current_month_value) + "). Pass."
+            
             if dq_indexes_dict[i] == 18:
                 zip_code_comment = dq_zip_code_analysis.zip_code_analysis(dq_zip_code_file_path)
-                df_dq_copy['Comment Formation'][i] += ", " + str(current_month_value) + " flags reported " + zip_code_comment + ", observed in past. Pass."
+                df_dq_copy['Comment Formation'][i] += " " + str(current_month_value) + " flags reported " + zip_code_comment + ", observed in past. Pass."
             
             if dq_indexes_dict[i] == 19:
                 unknown_roche_ndc_comment = dq_unknown_roche_ndc.dq_unknown_roche_analysis(dq_config_file_path,dq_unknown_roche_ndc_file_path)
-                df_dq_copy['Comment Formation'][i] += ", " + str(current_month_value) + " flags reported across " + unknown_roche_ndc_comment
+                df_dq_copy['Comment Formation'][i] += " " + str(current_month_value) + " flags reported across " + unknown_roche_ndc_comment
 
-            if dq_indexes_dict[i] == 4:
-                dq_branch_analysis.dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch_dq_file_path,previous_month_branch_dq_file_path)
+            if dq_indexes_dict[i] == 4:           #Branch analysis
+                branch_comment = dq_branch_analysis.dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch_dq_file_path,previous_month_branch_dq_file_path, output_path)
+                df_dq_copy['Comment Formation'][i] += " " + branch_comment
 
             elif df_dq[df_dq.columns[-1]][i] != 0 and df_dq[df_dq.columns[-2]][i] == 0 and dq_indexes_dict[i] not in [1,15,16,18,19,20]:
-                current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])     #Extracting integer value from string of current month
+                current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])
                 
                 df_dq_copy['Comment Formation'][i] = 'Trend Break, ' + str(current_month_value) + ' flag(s) reported'
     
-    #df_dq_copy.to_csv(r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\output1.csv")
-    
-    with pd.ExcelWriter('CIBD_SEP23.xlsx', engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
+    with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
         df_dq_copy.to_excel(writer, sheet_name=supplier_name + " DQ")
 
 comment_generation()
