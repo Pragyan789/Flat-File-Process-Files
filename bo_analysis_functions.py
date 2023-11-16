@@ -73,7 +73,7 @@ def df_outs_pivot_creation(data_month_year, data_month, df_outs_raw):
 
     return df_outs
 
-def sap_ins_pivot_creation(sap_ins_df, data_month, data_month_year, start_month, start_year):
+def sap_ins_pivot_creation(sap_ins_df, sap_filter_list_df, data_month, data_month_year, start_month, start_year):
     print(3)
     if sap_ins_df is not None:
         sap_ins_df["Month"] = sap_ins_df.SHIP_DATE.dt.month
@@ -86,9 +86,19 @@ def sap_ins_pivot_creation(sap_ins_df, data_month, data_month_year, start_month,
         else:
             end_check_date = str(data_month_year) + '-' + str(data_month) + '-30'
 
+        if sap_filter_list_df is not None:
+            sap_filter_list_df = sap_filter_list_df.fillna('')
 
+            # Following if conditions will traverse reference list column wise, and join with main Ins data if the column exists, thus applying filters.
+            # Requires a list to be maintained for each file.
+
+            if len(sap_filter_list_df[sap_filter_list_df['SHIP_TO_PARTY']!='']['SHIP_TO_PARTY']) != 0:
+                sap_ins_df = pd.merge(sap_ins_df, sap_filter_list_df[sap_filter_list_df['SHIP_TO_PARTY']!='']['SHIP_TO_PARTY'], on='SHIP_TO_PARTY', how='inner')
+            if len(sap_filter_list_df[sap_filter_list_df['SOLD_TO_PARTY']!='']['SOLD_TO_PARTY']) != 0:
+                sap_ins_df = pd.merge(sap_ins_df, sap_filter_list_df[sap_filter_list_df['SOLD_TO_PARTY']!='']['SOLD_TO_PARTY'], on='SOLD_TO_PARTY', how='inner')
+            
         # Filter Names (ship_to and sold_to) to be replaced below
-        sap_ins_pivot = pd.pivot_table((sap_ins_df.loc[(sap_ins_df['SHIP_DATE'] >= start_check_date) & (sap_ins_df['SHIP_DATE'] <= end_check_date) & ((sap_ins_df['SHIP_TO_PARTY'] == ('CIBD DISTRIBUTORS')))]), values='SALES_UNIT', index='NATIONAL_DRUG_CODE', columns=['Year','Month'], aggfunc=np.sum,fill_value=0)
+        sap_ins_pivot = pd.pivot_table((sap_ins_df.loc[(sap_ins_df['SHIP_DATE'] >= start_check_date) & (sap_ins_df['SHIP_DATE'] <= end_check_date)]), values='SALES_UNIT', index='NATIONAL_DRUG_CODE', columns=['Year','Month'], aggfunc=np.sum,fill_value=0)
 
         return sap_ins_pivot
     else:

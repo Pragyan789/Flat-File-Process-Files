@@ -38,24 +38,34 @@ df_input = df_input.set_index('Variable Name')
 df_input = df_input.fillna("")
 
 supplier_names_file_path = list(df_input.loc['supplier_names_file_path'])[0]
+combined_ins_path = list(df_input.loc['combined_ins_path'])[0]
+bo_file_path = list(df_input.loc['bo_file_path'])[0]
+reference_list_path = list(df_input.loc['reference_list_path'])[0]
+sap_filter_list_path = list(df_input.loc['sap_filter_list_path'])[0]
+sap_ins_file_path = list(df_input.loc['sap_ins_file_path'])[0]
+
 
 #Data Sources Import
 try:
-    df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\RELIANCERX Ins.xlsx")
+    df = pd.read_excel(combined_ins_path)
 except:
     print("Enter correct file path for Combined Ins File")
 try:
-    reference_list_df = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\RELIANCERX Reference List.xlsx")
+    reference_list_df = pd.read_excel(reference_list_path)
 except:
     print("Please enter correct path for Account Names Reference List")
 try:
-    df_outs_raw = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\RELIANCERX BO.xlsx", skiprows=1, usecols = 'B:Q')  #skipping first row and first column
+    df_outs_raw = pd.read_excel(bo_file_path, skiprows=1, usecols = 'B:Q')  #skipping first row and first column
 except:
     print("Enter correct file path for BO Table File")
 try:
-    sap_ins_df# = pd.read_excel(r"C:\Users\pragyan.agrawal\Downloads\SAP Data OCT'23.xlsx",sheet_name=1)
+    sap_ins_df = pd.read_excel(sap_ins_file_path,sheet_name=1)
 except:
     print("Please enter correct path for Sapins file")
+try:
+    sap_filter_list_df = pd.read_excel(sap_filter_list_path)
+except:
+    print("Please enter correct path for Sapins filter list file")
 try:
     supplier_names_df = pd.read_excel(supplier_names_file_path)
 except:
@@ -80,7 +90,7 @@ outs_pivot = None
 
 if sap_ins_df is not None:
     try:
-        sap_ins_pivot = bo_analysis_functions.sap_ins_pivot_creation(sap_ins_df, data_month, data_month_year, start_month, start_year)
+        sap_ins_pivot = bo_analysis_functions.sap_ins_pivot_creation(sap_ins_df, sap_filter_list_df, data_month, data_month_year, start_month, start_year)
     except:
         print("Sapins Pivot creation Function did not execute properly")
 
@@ -97,11 +107,11 @@ if df_outs_raw is not None:
         print("Outs Pivot creation Function did not execute properly")
 
 # Hardcoded Input (File Name)
-supplier_name = list(df.loc['supplier_name'])[0]
+supplier_name = list(df_input.loc['supplier_name'])[0]
 supplier_names_df = supplier_names_df.set_index('File Name')
 supplier_name = supplier_names_df[supplier_names_df.columns[0]][supplier_name.lower()]
 
-output_path = list(df.loc['output_path'])[0]
+output_path = list(df_input.loc['main_file_path'])[0]
 
 #Calling main analysis function
 bo_analysis_functions.bo_and_sap_analysis(ins_pivot, outs_pivot, sap_ins_pivot, supplier_name, output_path)

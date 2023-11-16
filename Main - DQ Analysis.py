@@ -38,7 +38,7 @@ dq_config_file_path = list(df.loc['dq_config_file_path'])[0]
 dq_uom_inconsistencies_file_path = list(df.loc['dq_uom_inconsistencies_file_path'])[0]
 raw_data_file_path = list(df.loc['raw_data_file_path'])[0]
 ndc_factoring_values_file_path = list(df.loc['ndc_factoring_values_file_path'])[0]
-output_path = list(df.loc['output_path'])[0]
+output_path = list(df.loc['main_file_path'])[0]
 
 #Source File Paths; to be modified according to user
 # main_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD_SEP23.xlsx"
