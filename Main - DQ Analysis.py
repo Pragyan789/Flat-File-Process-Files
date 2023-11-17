@@ -375,7 +375,8 @@ def comment_generation():
                 df_dq_copy['Comment Formation'][i] += " " + str(current_month_value) + " flags reported across " + unknown_roche_ndc_comment
 
             if dq_indexes_dict[i] == 4:           #Branch analysis
-                branch_comment = dq_branch_analysis.dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch_dq_file_path,previous_month_branch_dq_file_path, output_path)
+                branch_pivot = None
+                branch_comment, branch_pivot = dq_branch_analysis.dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch_dq_file_path,previous_month_branch_dq_file_path, output_path)
                 df_dq_copy['Comment Formation'][i] += " " + branch_comment
 
             elif df_dq[df_dq.columns[-1]][i] != 0 and df_dq[df_dq.columns[-2]][i] == 0 and dq_indexes_dict[i] not in [1,15,16,18,19,20]:

@@ -27,17 +27,18 @@ from datetime import date
 
 #File that contains all functions
 import bo_analysis_functions
+import dq_branch_analysis
 
 df = None
 reference_list_df = None
 df_outs_raw = None
 sap_ins_df = None
 
-df_input = pd.read_excel(r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Flat File Process Files\Input Paths.xlsx")
+df_input = pd.read_excel(r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Raw_Files_Folder\Input Paths.xlsx")
 df_input = df_input.set_index('Variable Name')
 df_input = df_input.fillna("")
 
-folder_path = list(df.loc['folder_path'])[0]
+folder_path = list(df_input.loc['folder_path'])[0]
 
 supplier_names_file_path = folder_path + "\\" + list(df_input.loc['supplier_names_file'])[0] + ".xlsx"
 combined_ins_path = folder_path + "\\" + list(df_input.loc['combined_ins'])[0] + ".xlsx"
@@ -45,6 +46,7 @@ bo_file_path = folder_path + "\\" + list(df_input.loc['bo_file'])[0] + ".xlsx"
 reference_list_path = folder_path + "\\" + list(df_input.loc['reference_list'])[0] + ".xlsx"
 sap_filter_list_path = folder_path + "\\" + list(df_input.loc['sap_filter_list'])[0] + ".xlsx"
 sap_ins_file_path = folder_path + "\\" + list(df_input.loc['sap_ins_file'])[0] + ".xlsx"
+branch_report_file_path = folder_path + "\\" + list(df_input.loc['branch_report_file'])[0] + ".xlsx"
 
 
 #Data Sources Import
@@ -86,9 +88,12 @@ start_year = (date.today() - pd.offsets.DateOffset(months=13)).year
 # start_month = 9
 # start_year = 2022
 
+df_combined_ins = None
 sap_ins_pivot = None
 ins_pivot = None
+ins_branch_pivot = None
 outs_pivot = None
+branch_pivot = None
 
 if sap_ins_df is not None:
     try:
@@ -98,7 +103,7 @@ if sap_ins_df is not None:
 
 if df is not None:
     try:
-        ins_pivot = bo_analysis_functions.df_ins_pivot_creation(df, reference_list_df, data_month, data_month_year, start_month, start_year)
+        ins_pivot, ins_branch_pivot, df_combined_ins = bo_analysis_functions.df_ins_pivot_creation(df, reference_list_df, data_month, data_month_year, start_month, start_year)
     except:
         print("Ins Pivot creation Function did not execute properly")
 
@@ -113,10 +118,17 @@ supplier_name = list(df_input.loc['supplier_name'])[0]
 supplier_names_df = supplier_names_df.set_index('File Name')
 supplier_name = supplier_names_df[supplier_names_df.columns[0]][supplier_name.lower()]
 
-output_path = list(df_input.loc['main_file_path'])[0]
+output_path = folder_path + "\\" + list(df_input.loc['main_file'])[0] + ".xlsx"
 
-#Calling main analysis function
+# Calling main analysis function
 bo_analysis_functions.bo_and_sap_analysis(ins_pivot, outs_pivot, sap_ins_pivot, supplier_name, output_path)
 
 if df is not None and df_outs_raw is not None:
+    # Unreported NDCs Analysis, output stored as separate tab in main file:
     bo_analysis_functions.unreported_ndc(ins_pivot, outs_pivot, output_path)
+    
+    # Unreported Branches Analysis, output stored as separate tab in main file:
+    # Comment Variable has no use, just for sake of calling the function, it has been introduced here.
+    comment = ''
+    comment, branch_pivot = dq_branch_analysis.dq_non_trending_branch_analysis(branch_report_file_path,'','', output_path)
+    bo_analysis_functions.unreported_branches(df_combined_ins, ins_branch_pivot, branch_pivot, output_path)

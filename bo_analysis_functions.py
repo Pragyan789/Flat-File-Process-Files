@@ -47,12 +47,16 @@ def df_ins_pivot_creation(df_ins, reference_list_df, data_month, data_month_year
         pivot = pivot.reset_index()
         pivot = pivot.set_index(pivot.columns[0])
 
-        # branch_pivot = pd.pivot_table(df_combined_ins.loc[(df_combined_ins['DATE'] >= start_check_date) & (df_combined_ins['DATE'] <= end_check_date)], values='QTY_DISPENSED', index='ID1_VALUE.1', columns=['year','month'], aggfunc=np.sum,fill_value=0)
-        return pivot
+        if 'ID1_VALUE.1' in df_combined_ins.columns:
+            branch_pivot = pd.pivot_table(df_combined_ins.loc[(df_combined_ins['DATE'] >= start_check_date) & (df_combined_ins['DATE'] <= end_check_date)], values='QTY_DISPENSED', index='ID1_VALUE.1', columns=['year','month'], aggfunc=np.sum,fill_value=0)
+        elif 'ID1_VALUE_1' in df_combined_ins.columns:
+            branch_pivot = pd.pivot_table(df_combined_ins.loc[(df_combined_ins['DATE'] >= start_check_date) & (df_combined_ins['DATE'] <= end_check_date)], values='QTY_DISPENSED', index='ID1_VALUE_1', columns=['year','month'], aggfunc=np.sum,fill_value=0)
+        
+        return pivot, branch_pivot, df_combined_ins
     
     else:
         # Returning None if Combined Ins Data is not provided
-        return None
+        return None, None, None
 
 
 def df_outs_pivot_creation(data_month_year, data_month, df_outs_raw):
@@ -282,19 +286,21 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name, output_pat
 
         elif bo_analysis_df["Percentage"].loc[ndc,"OUTs"] == 0:
             bo_analysis_df["Comment"].loc[ndc,"OUTs"] = "SellsIns seem incomplete"
-
         else:
             variance_list = list(df_variance.loc[ndc])
+            if bo_analysis_df["Percentage"].loc[ndc,"OUTs"] <=50 or bo_analysis_df["Percentage"].loc[ndc,"OUTs"] >=150:
+                bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Very high variance. "
+
             if variance_list[-1] == 0:
-                bo_analysis_df["Comment"].loc[ndc,"OUTs"] = "Pass as inventory remained steady"
+                bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Pass as inventory remained steady"
             elif variance_list[-1] > 0:
-                bo_analysis_df["Comment"].loc[ndc,"OUTs"] = "Pass as inventory went down by " + str(variance_list[-1]) + " this month"
+                bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Pass as inventory went down by " + str(variance_list[-1]) + " this month"
             elif any(var <= variance_list[-1] for var in variance_list[:-1]):
-                bo_analysis_df["Comment"].loc[ndc,"OUTs"] = "Pass as similar/higher inventory observed in past"
+                bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Pass as similar/higher inventory observed in past"
             elif all(var == 0 for var in variance_list[:-1]):
-                bo_analysis_df["Comment"].loc[ndc,"OUTs"] = "New NDC " + str(ndc)
+                bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "New NDC " + str(ndc)
             else:
-                bo_analysis_df["Comment"].loc[ndc,"OUTs"] = "Case to be monitored"
+                bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Case to be monitored"
 
     #Appending all required dataframes to csv file
     list_of_dataframes = [bo_analysis_df,pivot,df_outs]
@@ -330,7 +336,45 @@ def unreported_ndc(ins_pivot, outs_pivot, output_path):
     with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
         ins_pivot.to_excel(writer, sheet_name="Unreported NDCs")
 
-    # with open('unreported_ndcs_reliancerx.csv','a') as f:
-    #     ins_pivot.to_csv(f)
-
     return ins_pivot
+
+def unreported_branches(df_combined_ins,ins_branch_pivot,branch_pivot, output_path):
+    
+    # Extract the first column of result_selected_data
+    result_selected_data_first_column = branch_pivot.index.tolist()
+    # Extract the first column of ins_pivot_branch
+    ins_pivot_branch_first_column = ins_branch_pivot.index.tolist()
+
+    # Check for common values
+    common_values = set(result_selected_data_first_column) & set(ins_pivot_branch_first_column)
+
+    # Add a new column in ins_pivot_branch with the comment "trending" or "not trending"
+    ins_branch_pivot['Trend_Status'] = 'Unreported'
+    ins_branch_pivot.loc[ins_branch_pivot.index.isin(common_values), 'Trend_Status'] = ''
+
+    # Total sum column
+    ins_branch_pivot['Total'] = 0
+    # Create a new column 'Comment' based on Total value
+    ins_branch_pivot['Comment'] = ''
+    # Create Address column
+    ins_branch_pivot['Address'] = ''
+
+    ins_branch_pivot['Total'] = ins_branch_pivot.iloc[:, :-1].sum(axis=1)
+    ins_branch_pivot.loc[(ins_branch_pivot['Total'] < 100) & (ins_branch_pivot['Trend_Status'] == 'Unreported'), 'Comment'] = 'Pass as low volume'
+    ins_branch_pivot.loc[(ins_branch_pivot['Total'] > 100) & (ins_branch_pivot['Trend_Status'] == 'Unreported'), 'Comment'] = 'Over 100'
+
+    # unreported_branches = list(ins_branch_pivot[ins_branch_pivot['Comment'] == 'Over 100'].index)
+    unreported_branches = list(ins_branch_pivot.index)
+
+    for branch in unreported_branches:
+        if 'ID1_VALUE.1' in df_combined_ins.columns:
+            ins_branch_pivot.loc[branch,'Address'] = str(list(df_combined_ins[df_combined_ins['ID1_VALUE.1'] == branch]['ADDRESS1'].unique()))
+        elif 'ID1_VALUE_1' in df_combined_ins.columns:
+            ins_branch_pivot.loc[branch,'Address'] = str(list(df_combined_ins[df_combined_ins['ID1_VALUE_1'] == branch]['ADDRESS1'].unique()))
+        else:
+            print('ID1_VALUE_1 or ID1_VALUE.1 column does not exist in Ins data')
+    
+    with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
+        ins_branch_pivot.to_excel(writer, sheet_name="Unreported Branches")
+
+    return ins_branch_pivot

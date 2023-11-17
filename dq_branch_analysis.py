@@ -91,6 +91,7 @@ def dq_non_trending_branch_analysis(branch_report_file_path, current_month_branc
 
         # Select the 13 months' data and reorder the columns
         selected_data = table[sequence]
+        branch_pivot = selected_data.copy()
         
         comment_distinct_branch = ''
         
@@ -146,4 +147,4 @@ def dq_non_trending_branch_analysis(branch_report_file_path, current_month_branc
             branch_df.to_excel(writer, sheet_name="Branch Report")
             selected_data.to_excel(writer, sheet_name="Branch Pivot Analysis")
         
-        return comment_distinct_branch
+        return comment_distinct_branch, branch_pivot
