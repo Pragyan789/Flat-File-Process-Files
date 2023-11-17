@@ -22,23 +22,25 @@ df = pd.read_excel(r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solut
 df = df.set_index('Variable Name')
 df = df.fillna("")
 
-main_file_path = list(df.loc['main_file_path'])[0]
-new_month_dq_file_path = list(df.loc['new_month_dq_file_path'])[0]
-supplier_names_file_path = list(df.loc['supplier_names_file_path'])[0]
-tpc_file_path = list(df.loc['tpc_file_path'])[0]
-branch_report_file_path = list(df.loc['branch_report_file_path'])[0]
-current_month_branch_dq_file_path = list(df.loc['current_month_branch_dq_file_path'])[0]
-previous_month_branch_dq_file_path = list(df.loc['previous_month_branch_dq_file_path'])[0]
-txn_count_file_path = list(df.loc['txn_count_file_path'])[0]
-dq_qty_min_file_path = list(df.loc['dq_qty_min_file_path'])[0]
-dq_qty_max_file_path = list(df.loc['dq_qty_max_file_path'])[0]
-dq_zip_code_file_path = list(df.loc['dq_zip_code_file_path'])[0]
-dq_unknown_roche_ndc_file_path = list(df.loc['dq_unknown_roche_ndc_file_path'])[0]
-dq_config_file_path = list(df.loc['dq_config_file_path'])[0]
-dq_uom_inconsistencies_file_path = list(df.loc['dq_uom_inconsistencies_file_path'])[0]
-raw_data_file_path = list(df.loc['raw_data_file_path'])[0]
-ndc_factoring_values_file_path = list(df.loc['ndc_factoring_values_file_path'])[0]
-output_path = list(df.loc['main_file_path'])[0]
+folder_path = list(df.loc['folder_path'])[0]
+
+main_file_path = folder_path + "\\" + list(df.loc['main_file'])[0] + ".xlsx"
+new_month_dq_file_path = folder_path + "\\" + list(df.loc['new_month_dq_file'])[0] + ".xlsx"
+supplier_names_file_path = folder_path + "\\" + list(df.loc['supplier_names_file'])[0] + ".xlsx"
+tpc_file_path = folder_path + "\\" + list(df.loc['tpc_file'])[0] + ".xlsx"
+branch_report_file_path = folder_path + "\\" + list(df.loc['branch_report_file'])[0] + ".xlsx"
+current_month_branch_dq_file_path = folder_path + "\\" + list(df.loc['current_month_branch_dq_file'])[0] + ".xlsx"
+previous_month_branch_dq_file_path = folder_path + "\\" + list(df.loc['previous_month_branch_dq_file'])[0] + ".xlsx"
+txn_count_file_path = folder_path + "\\" + list(df.loc['txn_count_file'])[0] + ".xlsx"
+dq_qty_min_file_path = folder_path + "\\" + list(df.loc['dq_qty_min_file'])[0] + ".xlsx"
+dq_qty_max_file_path = folder_path + "\\" + list(df.loc['dq_qty_max_file'])[0] + ".xlsx"
+dq_zip_code_file_path = folder_path + "\\" + list(df.loc['dq_zip_code_file'])[0] + ".xlsx"
+dq_unknown_roche_ndc_file_path = folder_path + "\\" + list(df.loc['dq_unknown_roche_ndc_file'])[0] + ".xlsx"
+dq_config_file_path = folder_path + "\\" + list(df.loc['dq_config_file'])[0] + ".xlsx"
+dq_uom_inconsistencies_file_path = folder_path + "\\" + list(df.loc['dq_uom_inconsistencies_file'])[0] + ".xlsx"
+raw_data_file_path = folder_path + "\\" + list(df.loc['raw_data_file'])[0] + ".xlsx"
+ndc_factoring_values_file_path = folder_path + "\\" + list(df.loc['ndc_factoring_values_file'])[0] + ".xlsx"
+output_path = folder_path + "\\" + list(df.loc['main_file'])[0] + ".xlsx"
 
 #Source File Paths; to be modified according to user
 # main_file_path = r"C:\Users\pragyan.agrawal\Downloads\CIBD_SEP23.xlsx"

@@ -37,12 +37,14 @@ df_input = pd.read_excel(r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology
 df_input = df_input.set_index('Variable Name')
 df_input = df_input.fillna("")
 
-supplier_names_file_path = list(df_input.loc['supplier_names_file_path'])[0]
-combined_ins_path = list(df_input.loc['combined_ins_path'])[0]
-bo_file_path = list(df_input.loc['bo_file_path'])[0]
-reference_list_path = list(df_input.loc['reference_list_path'])[0]
-sap_filter_list_path = list(df_input.loc['sap_filter_list_path'])[0]
-sap_ins_file_path = list(df_input.loc['sap_ins_file_path'])[0]
+folder_path = list(df.loc['folder_path'])[0]
+
+supplier_names_file_path = folder_path + "\\" + list(df_input.loc['supplier_names_file'])[0] + ".xlsx"
+combined_ins_path = folder_path + "\\" + list(df_input.loc['combined_ins'])[0] + ".xlsx"
+bo_file_path = folder_path + "\\" + list(df_input.loc['bo_file'])[0] + ".xlsx"
+reference_list_path = folder_path + "\\" + list(df_input.loc['reference_list'])[0] + ".xlsx"
+sap_filter_list_path = folder_path + "\\" + list(df_input.loc['sap_filter_list'])[0] + ".xlsx"
+sap_ins_file_path = folder_path + "\\" + list(df_input.loc['sap_ins_file'])[0] + ".xlsx"
 
 
 #Data Sources Import
