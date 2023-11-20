@@ -389,8 +389,16 @@ def comment_generation():
                 
                 df_dq_copy['Comment Formation'][i] = 'Trend Break, ' + str(current_month_value) + ' flag(s) reported'
     
-    with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
-        df_dq_copy.to_excel(writer, sheet_name=supplier_name + " DQ")
+    # with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
+    #     df_dq_copy.to_excel(writer, sheet_name=supplier_name + " DQ")
+    
+    print("q")
+    with open('pharmacare_dfs.csv','a') as f:
+        df_dq_copy.to_csv(f)
+        f.write("\n")
+    print("z")
+
+    return df_dq_copy, branch_pivot
 
 # comment_generation()
 

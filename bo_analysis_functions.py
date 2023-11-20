@@ -18,7 +18,10 @@ def df_ins_pivot_creation(df_ins, reference_list_df, data_month, data_month_year
                 df_combined_ins.rename(columns = {'NAME':'Account Name'}, inplace = True)
                 df_combined_ins = pd.merge(df_combined_ins, reference_list_df[reference_list_df['Account Name']!='']['Account Name'], on='Account Name', how='inner')
             if len(reference_list_df[reference_list_df['ID1_VALUE.1']!='']['ID1_VALUE.1']) != 0:
-                df_combined_ins = pd.merge(df_combined_ins, reference_list_df[reference_list_df['ID1_VALUE.1']!='']['ID1_VALUE.1'], on='ID1_VALUE.1', how='inner')
+                try:
+                    df_combined_ins = pd.merge(df_combined_ins, reference_list_df[reference_list_df['ID1_VALUE.1']!='']['ID1_VALUE.1'], on='ID1_VALUE.1', how='inner')
+                except:
+                    df_combined_ins = pd.merge(df_combined_ins, reference_list_df[reference_list_df['ID1_VALUE.1']!='']['ID1_VALUE_1'], on='ID1_VALUE_1', how='inner')
             if len(reference_list_df[reference_list_df['CITY']!='']['CITY']) != 0:
                 df_combined_ins = pd.merge(df_combined_ins, reference_list_df[reference_list_df['CITY']!='']['CITY'], on='CITY', how='inner')
             if len(reference_list_df[reference_list_df['STATE']!='']['STATE']) != 0:
@@ -289,7 +292,7 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name, output_pat
         else:
             variance_list = list(df_variance.loc[ndc])
             if bo_analysis_df["Percentage"].loc[ndc,"OUTs"] <=50 or bo_analysis_df["Percentage"].loc[ndc,"OUTs"] >=150:
-                bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Very high variance. "
+                bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Very high variance, case to be monitored. "
 
             if variance_list[-1] == 0:
                 bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Pass as inventory remained steady"
@@ -306,13 +309,21 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name, output_pat
     list_of_dataframes = [bo_analysis_df,pivot,df_outs]
     name_of_dataframes = ['BO Analysis','Combined Ins Pivot','BO Table']
     print("x")
-    with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
-        for i,df in enumerate(list_of_dataframes):
-            try:
-                df.to_excel(writer, sheet_name=name_of_dataframes[i])
-            except:
-                print("A DF could not be printed to excel")
+    # with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
+    #     for i,df in enumerate(list_of_dataframes):
+    #         try:
+    #             df.to_excel(writer, sheet_name=name_of_dataframes[i])
+    #         except:
+    #             print("A DF could not be printed to excel")
+
+    # with open('pharmacare_dfs.csv','a') as f:
+    #     for df in list_of_dataframes:
+    #         df.to_csv(f)
+    #         f.write("\n")
+    
     print("z")
+
+    return bo_analysis_df, pivot, df_outs
 
 def unreported_ndc(ins_pivot, outs_pivot, output_path):
     unreported_ndc_pivot = ins_pivot.copy()
@@ -333,8 +344,14 @@ def unreported_ndc(ins_pivot, outs_pivot, output_path):
         else:
             ins_pivot.loc[unr_ndc,"Comment"] = "Need to Email POC"
     
-    with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
-        ins_pivot.to_excel(writer, sheet_name="Unreported NDCs")
+    # with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
+    #     ins_pivot.to_excel(writer, sheet_name="Unreported NDCs")
+    
+    # print("w")
+    # with open('pharmacare_dfs.csv','a') as f:
+    #     ins_pivot.to_csv(f)
+    #     f.write("\n")
+    # print("z")
 
     return ins_pivot
 
@@ -374,7 +391,12 @@ def unreported_branches(df_combined_ins,ins_branch_pivot,branch_pivot, output_pa
         else:
             print('ID1_VALUE_1 or ID1_VALUE.1 column does not exist in Ins data')
     
-    with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
-        ins_branch_pivot.to_excel(writer, sheet_name="Unreported Branches")
+    # with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
+    #     ins_branch_pivot.to_excel(writer, sheet_name="Unreported Branches")
+    # print("y")
+    # with open('pharmacare_dfs.csv','a') as f:
+    #     ins_branch_pivot.to_csv(f)
+    #     f.write("\n")
+    # print("z")
 
     return ins_branch_pivot

@@ -19,6 +19,7 @@ import pandas as pd
 import numpy as np
 import os
 from openpyxl import load_workbook
+import xlsxwriter
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -106,6 +107,7 @@ if sap_ins_df is not None and sap_filter_list_df is not None:
 
 if df is not None:
     try:
+        #Here ins_branch_pivot is pivot created on Ins data with Index as id1_value.1, this is different from branch_pivot
         ins_pivot, ins_branch_pivot, df_combined_ins = bo_analysis_functions.df_ins_pivot_creation(df, reference_list_df, data_month, data_month_year, start_month, start_year)
     except:
         print("Ins Pivot creation Function did not execute properly")
@@ -123,21 +125,48 @@ supplier_name = supplier_names_df[supplier_names_df.columns[0]][supplier_name.lo
 
 output_path = supplier_folder_path + "\\" + list(df_input.loc['main_file'])[0] + ".xlsx"
 
+
+bo_analysis_df = None
+ins_pivot_output = None
+df_outs = None
+
 # Calling main analysis function
-bo_analysis_functions.bo_and_sap_analysis(ins_pivot, outs_pivot, sap_ins_pivot, supplier_name, output_path)
+bo_analysis_df, ins_pivot_output, df_outs = bo_analysis_functions.bo_and_sap_analysis(ins_pivot, outs_pivot, sap_ins_pivot, supplier_name, output_path)
+
+unreported_ndc_pivot_df = None
+unreported_branches_pivot_df = None
 
 if df is not None and df_outs_raw is not None:
     # Unreported NDCs Analysis, output stored as separate tab in main file:
-    bo_analysis_functions.unreported_ndc(ins_pivot, outs_pivot, output_path)
+    unreported_ndc_pivot_df = bo_analysis_functions.unreported_ndc(ins_pivot, outs_pivot, output_path)
     
     # Unreported Branches Analysis, output stored as separate tab in main file:
     # Comment Variable has no use, just for sake of calling the function, it has been introduced here.
     comment = ''
     comment, branch_pivot = dq_branch_analysis.dq_non_trending_branch_analysis(branch_report_file_path,'','', output_path)
-    bo_analysis_functions.unreported_branches(df_combined_ins, ins_branch_pivot, branch_pivot, output_path)
+    
+    unreported_branches_pivot_df = bo_analysis_functions.unreported_branches(df_combined_ins, ins_branch_pivot, branch_pivot, output_path)
 
-DQ_Analysis_Main.comment_generation()
+#DQ Function
+df_dq = None
+branch_pivot = None
 
-months = {1:"JAN",2:"FEB",3:"MAR",4:"APR",5:"MAY",6:"JUN",7:"JUL",8:"AUG",9:"SEP",10:"OCT",11:"NOV",12:"DEC"}
-output_destination_path = supplier_folder_path + "\\" + supplier_name + "_" + months[(date.today().month - 1)] + str(data_month_year)[-2:] + ".xlsx"
-os.rename(output_path,output_destination_path)
+df_dq, branch_pivot = DQ_Analysis_Main.comment_generation()
+
+#Output_File:
+list_of_dataframes = [df_dq, df_outs, bo_analysis_df, branch_pivot, unreported_ndc_pivot_df, unreported_branches_pivot_df, ins_pivot_output]
+names_of_dataframes = [supplier_name + " DQ", supplier_name + " BO", "BO Analysis", "Branch Pivot", "Unreported NDCs", "Unreported Branches", "Combined Ins Pivot"]
+
+print("start")
+with pd.ExcelWriter(folder_path + "\\" + supplier_name + ".xlsx", engine="xlsxwriter") as writer:
+    for iter, df in enumerate(list_of_dataframes):
+        try:
+            df.to_excel(writer, sheet_name=names_of_dataframes[iter])
+        except:
+            print("A DF could not be printed to excel")
+print("end")
+
+# #Rename file to current Data month:
+# months = {1:"JAN",2:"FEB",3:"MAR",4:"APR",5:"MAY",6:"JUN",7:"JUL",8:"AUG",9:"SEP",10:"OCT",11:"NOV",12:"DEC"}
+# output_destination_path = supplier_folder_path + "\\" + supplier_name + "_" + months[(date.today().month - 1)] + str(data_month_year)[-2:] + ".xlsx"
+# os.rename(output_path,output_destination_path)
