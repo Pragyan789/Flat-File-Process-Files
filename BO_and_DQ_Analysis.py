@@ -98,7 +98,7 @@ ins_branch_pivot = None
 outs_pivot = None
 branch_pivot = None
 
-if sap_ins_df is not None:
+if sap_ins_df is not None and sap_filter_list_df is not None:
     try:
         sap_ins_pivot = bo_analysis_functions.sap_ins_pivot_creation(sap_ins_df, sap_filter_list_df, data_month, data_month_year, start_month, start_year)
     except:

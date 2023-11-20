@@ -122,55 +122,58 @@ try:
 except:
     row_num[0] = 1
 
-try:
-    df = pd.read_excel(main_file_path,skiprows = row_num[0]+1)
-except:
-    print('Path for New Month DQ file Incorrect/Missing')
+if df is not None:
+    try:
+        df = pd.read_excel(main_file_path,skiprows = row_num[0]+1)
+    except:
+        print('Path for New Month DQ file Incorrect/Missing')
 
-df['Validation Rule Description History'][0] = 'Month'
+    df['Validation Rule Description History'][0] = 'Month'
 
-#hardcoded value
-last_column_dq = np.argwhere(df.values=='Comments')[0][1]
+    #hardcoded value
+    last_column_dq = np.argwhere(df.values=='Comments')[0][1]
 
-#slicing dataframe with last row and last column
-df_dq = df.iloc[:,:last_column_dq+1]
-df_dq = df_dq[:21]
+    #slicing dataframe with last row and last column
+    df_dq = df.iloc[:,:last_column_dq+1]
+    df_dq = df_dq[:21]
 
-df_dq = df_dq.set_index(df_dq.columns[0])
+    df_dq = df_dq.set_index(df_dq.columns[0])
 
-df_dq = df_dq.fillna(0)
+    df_dq = df_dq.fillna(0)
 
-#***
+    #***
 
-#creating dataframe for New Data month DQ data
-data_month_dq_df = pd.read_excel(new_month_dq_file_path, header=None, index_col=0)
-data_month_dq_df = data_month_dq_df.fillna(0)
+    #creating dataframe for New Data month DQ data
+    data_month_dq_df = pd.read_excel(new_month_dq_file_path, header=None, index_col=0)
+    data_month_dq_df = data_month_dq_df.fillna(0)
 
-#Inserting New Data month Column into Main DQ table
-#Import File ID code to be written
-df_dq.insert(len(df_dq.columns)-1,f'File ID : {file_id}',data_month_dq_df[2])    #Column is inserted according to corresponding index values
+    #Inserting New Data month Column into Main DQ table
+    #Import File ID code to be written
+    df_dq.insert(len(df_dq.columns)-1,f'File ID : {file_id}',data_month_dq_df[2])    #Column is inserted according to corresponding index values
 
-#Assigning current month and year to a string
-data_month = (date.today() - pd.offsets.DateOffset(months=1))
-data_month_words = data_month.month_name(locale = 'English')
-data_month_year = data_month.year
-data_month_str = data_month_words+" "+str(data_month_year)
+    #Assigning current month and year to a string
+    data_month = (date.today() - pd.offsets.DateOffset(months=1))
+    data_month_words = data_month.month_name(locale = 'English')
+    data_month_year = data_month.year
+    data_month_str = data_month_words+" "+str(data_month_year)
 
-#Assigning string to column name
-last_column_dq = np.argwhere(df_dq.values=='Comments')[0][1]
+    #Assigning string to column name
+    last_column_dq = np.argwhere(df_dq.values=='Comments')[0][1]
 
-df_dq[df_dq.columns[last_column_dq-1]][0] = data_month_str
+    df_dq[df_dq.columns[last_column_dq-1]][0] = data_month_str
 
-#Dropping comments column
-df_comments = pd.DataFrame(df_dq[df_dq.columns[-1]])
-df_dq = df_dq.drop(df_dq.columns[-1], axis = 1)
+    #Dropping comments column
+    df_comments = pd.DataFrame(df_dq[df_dq.columns[-1]])
+    df_dq = df_dq.drop(df_dq.columns[-1], axis = 1)
 
-#Creating dictionary for storing Parameter Name and their index position
-dq_indexes_dict = {}
-count = 1
-for i in df_dq.index[1:]:
-    dq_indexes_dict[i] = count
-    count += 1
+    #Creating dictionary for storing Parameter Name and their index position
+    dq_indexes_dict = {}
+    count = 1
+    for i in df_dq.index[1:]:
+        dq_indexes_dict[i] = count
+        count += 1
+else:
+    print("Main file path incorrect/not present, analysis not done")
 
 #FOR SP Files:
 
