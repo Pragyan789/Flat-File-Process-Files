@@ -305,10 +305,9 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name, output_pat
             else:
                 bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Case to be monitored"
 
-    #Appending all required dataframes to csv file
-    list_of_dataframes = [bo_analysis_df,pivot,df_outs]
-    name_of_dataframes = ['BO Analysis','Combined Ins Pivot','BO Table']
-    print("x")
+    # #Appending all required dataframes to csv file
+    # list_of_dataframes = [bo_analysis_df,pivot,df_outs]
+    # name_of_dataframes = ['BO Analysis','Combined Ins Pivot','BO Table']
     # with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
     #     for i,df in enumerate(list_of_dataframes):
     #         try:
@@ -320,9 +319,8 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name, output_pat
     #     for df in list_of_dataframes:
     #         df.to_csv(f)
     #         f.write("\n")
-    
-    print("z")
 
+    
     return bo_analysis_df, pivot, df_outs
 
 def unreported_ndc(ins_pivot, outs_pivot, output_path):

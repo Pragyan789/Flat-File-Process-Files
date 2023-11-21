@@ -20,6 +20,7 @@ import numpy as np
 import os
 from openpyxl import load_workbook
 import xlsxwriter
+import xlwings as xw
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -154,19 +155,37 @@ branch_pivot = None
 df_dq, branch_pivot = DQ_Analysis_Main.comment_generation()
 
 #Output_File:
-list_of_dataframes = [df_dq, df_outs, bo_analysis_df, branch_pivot, unreported_ndc_pivot_df, unreported_branches_pivot_df, ins_pivot_output]
-names_of_dataframes = [supplier_name + " DQ", supplier_name + " BO", "BO Analysis", "Branch Pivot", "Unreported NDCs", "Unreported Branches", "Combined Ins Pivot"]
+list_of_dataframes = [df_dq, df_outs, bo_analysis_df, branch_pivot, unreported_ndc_pivot_df, unreported_branches_pivot_df, ins_pivot]
+names_of_dataframes = [supplier_name + " DQ", supplier_name + " BO", supplier_name + " BO Analysis", supplier_name + " Branch Pivot", supplier_name + " Unreported NDCs", supplier_name + " Unreported Branches", supplier_name + " Combined Ins Pivot"]
 
 print("start")
-with pd.ExcelWriter(folder_path + "\\" + supplier_name + ".xlsx", engine="xlsxwriter") as writer:
-    for iter, df in enumerate(list_of_dataframes):
-        try:
-            df.to_excel(writer, sheet_name=names_of_dataframes[iter])
-        except:
-            print("A DF could not be printed to excel")
+# with pd.ExcelWriter(folder_path + "\\" + supplier_name + ".xlsx", engine="xlsxwriter") as writer:
+#     for iter, df in enumerate(list_of_dataframes):
+#         try:
+#             df.to_excel(writer, sheet_name=names_of_dataframes[iter])
+#         except:
+#             print("A DF could not be printed to excel")
+
+book = xw.Book(output_path)
+for iter, df in enumerate(list_of_dataframes):
+    last_sheet_name = book.sheets[-1].name
+
+    try:
+        #creating new sheet at end of File
+        book.sheets.add(names_of_dataframes[iter], after=last_sheet_name)
+    except:
+        print("Sheet already exists in master file")
+    
+    ws = book.sheets[names_of_dataframes[iter]]
+    ws["A1"].options(pd.DataFrame, header=1, index=True, expand='table').value = df
+    ws.autofit()
+
+book.save()
+book.close()
+
 print("end")
 
-# #Rename file to current Data month:
-# months = {1:"JAN",2:"FEB",3:"MAR",4:"APR",5:"MAY",6:"JUN",7:"JUL",8:"AUG",9:"SEP",10:"OCT",11:"NOV",12:"DEC"}
-# output_destination_path = supplier_folder_path + "\\" + supplier_name + "_" + months[(date.today().month - 1)] + str(data_month_year)[-2:] + ".xlsx"
-# os.rename(output_path,output_destination_path)
+#Rename file to current Data month:
+months = {1:"JAN",2:"FEB",3:"MAR",4:"APR",5:"MAY",6:"JUN",7:"JUL",8:"AUG",9:"SEP",10:"OCT",11:"NOV",12:"DEC"}
+output_destination_path = supplier_folder_path + "\\" + supplier_name + "_" + months[(date.today().month - 1)] + str(data_month_year)[-2:] + ".xlsx"
+os.rename(output_path,output_destination_path)
