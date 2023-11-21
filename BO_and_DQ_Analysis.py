@@ -1,19 +1,8 @@
-#Takes two data sources: 
-# Combined Ins File
-# Combined Outs File
-# and outputs results to another file
-#
-#SAP Analysis to be implemented
-#Implement Name Filter through google sheets
 #This code assumes that Ins and Outs data is to be analyzed for 13 months
 #code will not work for files such as 'Qualitas Pharmacy' which has only 4 months in BO, can include in future scope for improvement
 
-#IMP - Find a way to set SAP filters without using hardcoded values.
-
 #INs NDC data type - int64
 #OUTs NDC data type - str
-
-#IMP: Need to include more exception handling
 
 import pandas as pd
 import numpy as np
@@ -121,7 +110,7 @@ if df_outs_raw is not None:
     except:
         print("Outs Pivot creation Function did not execute properly")
 
-# Hardcoded Input (File Name)
+
 supplier_name_raw = list(df_input.loc['supplier_name'])[0]
 supplier_names_df = supplier_names_df.set_index('File Name')
 supplier_name = supplier_names_df[supplier_names_df.columns[0]][supplier_name_raw.lower()]
@@ -141,7 +130,10 @@ unreported_branches_pivot_df = None
 
 if df is not None and df_outs_raw is not None:
     # Unreported NDCs Analysis, output stored as separate tab in main file:
-    unreported_ndc_pivot_df = bo_analysis_functions.unreported_ndc(ins_pivot, outs_pivot, output_path)
+    try:
+        unreported_ndc_pivot_df = bo_analysis_functions.unreported_ndc(ins_pivot, outs_pivot, output_path)
+    except:
+        print("Unreported NDCs function did not run correctly")
     
     # Unreported Branches Analysis, output stored as separate tab in main file:
     # Comment Variable has no use, just for sake of calling the function, it has been introduced here.
@@ -151,26 +143,23 @@ if df is not None and df_outs_raw is not None:
     except:
         print("Branch analysis Function did not run properly")
     
-
-    unreported_branches_pivot_df = bo_analysis_functions.unreported_branches(df_combined_ins, ins_branch_pivot, branch_pivot, output_path)
+    try:
+        unreported_branches_pivot_df = bo_analysis_functions.unreported_branches(df_combined_ins, ins_branch_pivot, branch_pivot, output_path)
+    except:
+        print("Unreported Branches function did not run correctly")
 
 #DQ Function
 df_dq = None
 branch_pivot = None
 
+# try:
 df_dq, branch_pivot = DQ_Analysis_Main.comment_generation()
+# except:
+#     print("DQ Function did not run correctly")
 
 #Output_File:
 list_of_dataframes = [df_dq, df_outs, bo_analysis_df, branch_pivot, unreported_ndc_pivot_df, unreported_branches_pivot_df, ins_pivot]
 names_of_dataframes = [supplier_name + " DQ", supplier_name + " BO", supplier_name + " BO Analysis", supplier_name + " Branch Pivot", supplier_name + " Unreported NDCs", supplier_name + " Unreported Branches", supplier_name + " Combined Ins Pivot"]
-
-print("start")
-# with pd.ExcelWriter(folder_path + "\\" + supplier_name + ".xlsx", engine="xlsxwriter") as writer:
-#     for iter, df in enumerate(list_of_dataframes):
-#         try:
-#             df.to_excel(writer, sheet_name=names_of_dataframes[iter])
-#         except:
-#             print("A DF could not be printed to excel")
 
 book = xw.Book(output_path)
 for iter, df in enumerate(list_of_dataframes):
@@ -182,14 +171,16 @@ for iter, df in enumerate(list_of_dataframes):
     except:
         print("Sheet already exists in master file")
     
-    ws = book.sheets[names_of_dataframes[iter]]
-    ws["A1"].options(pd.DataFrame, header=1, index=True, expand='table').value = df
+    try:
+        ws = book.sheets[names_of_dataframes[iter]]
+        ws["A1"].options(pd.DataFrame, header=1, index=True, expand='table').value = df
+    except:
+        print(names_of_dataframes[iter] + " DF not inserted")
+
     ws.autofit()
 
 book.save()
 book.close()
-
-print("end")
 
 #Rename file to current Data month:
 months = {1:"JAN",2:"FEB",3:"MAR",4:"APR",5:"MAY",6:"JUN",7:"JUL",8:"AUG",9:"SEP",10:"OCT",11:"NOV",12:"DEC"}

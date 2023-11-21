@@ -3,7 +3,6 @@ import numpy as np
 from openpyxl import load_workbook
 
 def df_ins_pivot_creation(df_ins, reference_list_df, data_month, data_month_year, start_month, start_year):
-    print(1)
 
     if df_ins is not None:
         df_combined_ins = df_ins
@@ -63,7 +62,6 @@ def df_ins_pivot_creation(df_ins, reference_list_df, data_month, data_month_year
 
 
 def df_outs_pivot_creation(data_month_year, data_month, df_outs_raw):
-    print(2)
     df_outs = df_outs_raw.copy()
 
     df_outs.columns = df_outs.loc[1]
@@ -81,7 +79,6 @@ def df_outs_pivot_creation(data_month_year, data_month, df_outs_raw):
     return df_outs
 
 def sap_ins_pivot_creation(sap_ins_df, sap_filter_list_df, data_month, data_month_year, start_month, start_year):
-    print(3)
     if sap_ins_df is not None:
         sap_ins_df["Month"] = sap_ins_df.SHIP_DATE.dt.month
         sap_ins_df["Year"] = sap_ins_df.SHIP_DATE.dt.year
@@ -113,10 +110,9 @@ def sap_ins_pivot_creation(sap_ins_df, sap_filter_list_df, data_month, data_mont
 
 
 def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name, output_path):
-    print(4)
     
     #List of Sap only analysis suppliers
-    sap_only_suppliers = ["NYBC", "CIBD", "SUPERIOR BIOLOGICS"]
+    sap_only_suppliers = ["NYBC", "CIBD", "SUPERIOR BIOLOGICS", "HPC LLC", "HOG"]
 
     total_ins_df = None
     #Combined Ins data preparation:
@@ -133,7 +129,6 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name, output_pat
             l.append(ins_sum)
 
         total_ins_df = pd.DataFrame(l, index = NDC_pivot, columns = ['Sum of QTY_DISPENSED'])
-        # print(total_ins_df)
 
     #Sapins data preparation:
     #Calculating Sum of Sales_Unit for each NDC in SAP_Ins Pivot
@@ -304,22 +299,6 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name, output_pat
                 bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "New NDC " + str(ndc)
             else:
                 bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Case to be monitored"
-
-    # #Appending all required dataframes to csv file
-    # list_of_dataframes = [bo_analysis_df,pivot,df_outs]
-    # name_of_dataframes = ['BO Analysis','Combined Ins Pivot','BO Table']
-    # with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
-    #     for i,df in enumerate(list_of_dataframes):
-    #         try:
-    #             df.to_excel(writer, sheet_name=name_of_dataframes[i])
-    #         except:
-    #             print("A DF could not be printed to excel")
-
-    # with open('pharmacare_dfs.csv','a') as f:
-    #     for df in list_of_dataframes:
-    #         df.to_csv(f)
-    #         f.write("\n")
-
     
     return bo_analysis_df, pivot, df_outs
 
@@ -341,15 +320,6 @@ def unreported_ndc(ins_pivot, outs_pivot, output_path):
             ins_pivot.loc[unr_ndc,"Comment"] = "Pass as return volumes observed"
         else:
             ins_pivot.loc[unr_ndc,"Comment"] = "Need to Email POC"
-    
-    # with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
-    #     ins_pivot.to_excel(writer, sheet_name="Unreported NDCs")
-    
-    # print("w")
-    # with open('pharmacare_dfs.csv','a') as f:
-    #     ins_pivot.to_csv(f)
-    #     f.write("\n")
-    # print("z")
 
     return ins_pivot
 
@@ -388,13 +358,5 @@ def unreported_branches(df_combined_ins,ins_branch_pivot,branch_pivot, output_pa
             ins_branch_pivot.loc[branch,'Address'] = str(list(df_combined_ins[df_combined_ins['ID1_VALUE_1'] == branch]['ADDRESS1'].unique()))
         else:
             print('ID1_VALUE_1 or ID1_VALUE.1 column does not exist in Ins data')
-    
-    # with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
-    #     ins_branch_pivot.to_excel(writer, sheet_name="Unreported Branches")
-    # print("y")
-    # with open('pharmacare_dfs.csv','a') as f:
-    #     ins_branch_pivot.to_csv(f)
-    #     f.write("\n")
-    # print("z")
 
     return ins_branch_pivot

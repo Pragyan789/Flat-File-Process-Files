@@ -137,20 +137,19 @@ def dq_non_trending_branch_analysis(branch_report_file_path, current_month_branc
                         if 0 < selected_data[selected_data.columns[1:]].loc[branch].astype(bool).sum(axis=0) < 12:
                             rsa.append(branch)
                             comment = "Reported Sales again"
-                    # print(comment)
+
                     selected_data.loc[branch,'Comment'] = comment
 
-            comment_distinct_branch = "Branch(es) with DEA ID:" + ",".join(str(branch) for branch in rsft) + " - Reported Sales for the first Time; " + ",".join(str(branch) for branch in msft) + " - Missing Sales for the first Time; " + ",".join(str(branch) for branch in msa) + " - Missing Sales Again, however gaps observed in past; " + ",".join(str(branch) for branch in rsa) + " - Reported sales again, gaps observed in past."
-        
-        #Export data to file
-        # with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
-        #     branch_df.to_excel(writer, sheet_name="Branch Report")
-        #     selected_data.to_excel(writer, sheet_name="Branch Pivot Analysis")
-        
-        # print("b")
-        # with open('pharmacare_dfs.csv','a') as f:
-        #     selected_data.to_csv(f)
-        #     f.write("\n")
-        # print("z")
+            if rsft or msft or msa or rsa:
+                comment_distinct_branch += 'Branch(es) with DEA ID:'
+            
+            if rsft:
+                comment_distinct_branch += ",".join(str(branch) for branch in rsft) + " - Reported Sales for the first Time; "
+            if msft:
+                comment_distinct_branch += ",".join(str(branch) for branch in msft) + " - Missing Sales for the first Time; "
+            if msa:
+                comment_distinct_branch += ",".join(str(branch) for branch in msa) + " - Missing Sales Again, however gaps observed in past; "
+            if rsa:
+                comment_distinct_branch += ",".join(str(branch) for branch in rsa) + " - Reported sales again, gaps observed in past."
         
         return comment_distinct_branch, branch_pivot

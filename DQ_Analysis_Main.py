@@ -215,9 +215,10 @@ def comment_generation():
                 current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])
 
                 comment_qty_min = str(current_month_value) + " flag(s) reported for: "
-                comment_qty_min_list = dq_qty_min_max_analysis.qty_min_analysis(txn_count_file_path, dq_qty_min_file_path)
-                for comment in comment_qty_min_list:
-                    comment_qty_min += comment
+                # comment_qty_min_list = dq_qty_min_max_analysis.qty_min_analysis(txn_count_file_path, dq_qty_min_file_path)
+                # for comment in comment_qty_min_list:
+                #     comment_qty_min += comment
+                comment_qty_min += dq_qty_min_max_analysis.qty_min_analysis(txn_count_file_path, dq_qty_min_file_path)
                 df_dq_copy['Comment Formation'][i] = comment_qty_min
         
         elif dq_indexes_dict[i] in [16]:                                  #QTY MAX ANALYSIS
@@ -225,20 +226,21 @@ def comment_generation():
                 current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])
 
                 comment_qty_max = str(current_month_value) + " flag(s) reported for: "
-                comment_qty_max_list = dq_qty_min_max_analysis.qty_max_analysis(txn_count_file_path, dq_qty_max_file_path)
-                for comment in comment_qty_max_list:
-                    comment_qty_max += comment + ", "
+                # comment_qty_max_list = dq_qty_min_max_analysis.qty_max_analysis(txn_count_file_path, dq_qty_max_file_path)
+                # for comment in comment_qty_max_list:
+                #     comment_qty_max += comment + ", "
+                comment_qty_max += dq_qty_min_max_analysis.qty_max_analysis(txn_count_file_path, dq_qty_max_file_path)
                 df_dq_copy['Comment Formation'][i] = comment_qty_max
         
         elif dq_indexes_dict[i] in [20]:                                   #UOM INCONSISTENCIES ANALYSIS
             if df_dq[df_dq.columns[-1]][i] != 0:
                 current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])
-
-                comments_uom_inc_list = dq_uom_inconsistencies.dq_uom_inconsistencies_analysis(dq_uom_inconsistencies_file_path,raw_data_file_path,ndc_factoring_values_file_path)
+                
                 comment_uom_inc = ""
+                comment_uom_inc = dq_uom_inconsistencies.dq_uom_inconsistencies_analysis(dq_uom_inconsistencies_file_path,raw_data_file_path,ndc_factoring_values_file_path)
 
-                for comment_uom in comments_uom_inc_list:
-                    comment_uom_inc += comment_uom + ", "
+                # for comment_uom in comments_uom_inc_list:
+                #     comment_uom_inc += comment_uom + ", "
                 df_dq_copy['Comment Formation'][i] = comment_uom_inc
 
 # OLD BACKFILLS ANALYSIS METHOD:
