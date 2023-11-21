@@ -37,6 +37,8 @@ df = None
 reference_list_df = None
 df_outs_raw = None
 sap_ins_df = None
+sap_filter_list_df = None
+supplier_names_df = None
 
 df_input = pd.read_excel(r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Raw_Files_Folder\Input Paths.xlsx")
 df_input = df_input.set_index('Variable Name')
@@ -120,9 +122,9 @@ if df_outs_raw is not None:
         print("Outs Pivot creation Function did not execute properly")
 
 # Hardcoded Input (File Name)
-supplier_name = list(df_input.loc['supplier_name'])[0]
+supplier_name_raw = list(df_input.loc['supplier_name'])[0]
 supplier_names_df = supplier_names_df.set_index('File Name')
-supplier_name = supplier_names_df[supplier_names_df.columns[0]][supplier_name.lower()]
+supplier_name = supplier_names_df[supplier_names_df.columns[0]][supplier_name_raw.lower()]
 
 output_path = supplier_folder_path + "\\" + list(df_input.loc['main_file'])[0] + ".xlsx"
 
@@ -144,8 +146,12 @@ if df is not None and df_outs_raw is not None:
     # Unreported Branches Analysis, output stored as separate tab in main file:
     # Comment Variable has no use, just for sake of calling the function, it has been introduced here.
     comment = ''
-    comment, branch_pivot = dq_branch_analysis.dq_non_trending_branch_analysis(branch_report_file_path,'','', output_path)
+    try:
+        comment, branch_pivot = dq_branch_analysis.dq_non_trending_branch_analysis(branch_report_file_path,'','', output_path)
+    except:
+        print("Branch analysis Function did not run properly")
     
+
     unreported_branches_pivot_df = bo_analysis_functions.unreported_branches(df_combined_ins, ins_branch_pivot, branch_pivot, output_path)
 
 #DQ Function

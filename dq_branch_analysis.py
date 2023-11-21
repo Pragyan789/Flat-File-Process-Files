@@ -19,11 +19,11 @@ def dq_non_trending_branch_analysis(branch_report_file_path, current_month_branc
     try:
         orig_df_current_month_branch_dq = pd.read_excel(current_month_branch_dq_file_path)
     except:
-        print("Please enter correct path for Current Month Branch DQ file")
+        print("Path for Current Month Branch DQ file not entered")
     try:
         orig_df_previous_month_branch_dq = pd.read_excel(previous_month_branch_dq_file_path)
     except:
-        print("Please enter correct path for Previous Month Branch DQ file")
+        print("Path for Previous Month Branch DQ file not entered")
 
     if branch_df is not None:
         

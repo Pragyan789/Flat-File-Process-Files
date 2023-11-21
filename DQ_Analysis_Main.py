@@ -95,7 +95,7 @@ except:
     print("Please enter correct path for Supplier names file")
 
 supplier_names_df = supplier_names_df.set_index('File Name')
-supplier_name = supplier_names_df[supplier_names_df.columns[0]][supplier_name.lower()]    #extracting supplier name as present in TPC File
+supplier_name_extracted = supplier_names_df[supplier_names_df.columns[0]][supplier_name.lower()]    #extracting supplier name as present in TPC File
 supplier_category = supplier_names_df['Category'][supplier_name.lower()]
 
 try:
@@ -104,7 +104,7 @@ except:
     print("Please enter correct path for TPC File")
 
 try:
-    file_id = int(tpc_df[(tpc_df["Sender Name"] == supplier_name) & (tpc_df["Received File Status"] == "CL Completed")]["Received File ID"])
+    file_id = int(tpc_df[(tpc_df["Sender Name"] == supplier_name_extracted) & (tpc_df["Received File Status"] == "CL Completed")]["Received File ID"])
 except:
     file_id = ''
 #===
@@ -384,10 +384,10 @@ def comment_generation():
                 branch_comment, branch_pivot = dq_branch_analysis.dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch_dq_file_path,previous_month_branch_dq_file_path, output_path)
                 df_dq_copy['Comment Formation'][i] += " " + branch_comment
 
-            elif df_dq[df_dq.columns[-1]][i] != 0 and df_dq[df_dq.columns[-2]][i] == 0 and dq_indexes_dict[i] not in [1,15,16,18,19,20]:
-                current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])
-                
-                df_dq_copy['Comment Formation'][i] = 'Trend Break, ' + str(current_month_value) + ' flag(s) reported'
+        elif df_dq[df_dq.columns[-1]][i] != 0 and df_dq[df_dq.columns[-2]][i] == 0 and dq_indexes_dict[i] not in [1,15,16,18,19,20]:
+            current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])
+            
+            df_dq_copy['Comment Formation'][i] = 'Trend Break, ' + str(current_month_value) + ' flag(s) reported'
     
     # with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
     #     df_dq_copy.to_excel(writer, sheet_name=supplier_name + " DQ")
