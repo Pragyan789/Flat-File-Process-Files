@@ -65,6 +65,7 @@ def dq_uom_inconsistencies_analysis(dq_uom_inconsistencies_file_path, raw_data_f
                 
                 if str(ndc).startswith('4'):
                     comments+="Factoring value unknown, Roche NDC, observed in past, " + str(int(ndc)) + ", qty: " + str(qty_dispensed_list[j]) + "; "
+                
                 #Case when raw qty is integer, which is incorrectly divided by factoring value
                 elif raw_qty_list[j].is_integer():
                     if factoring_value != 0:

@@ -389,7 +389,15 @@ def comment_generation():
         elif df_dq[df_dq.columns[-1]][i] != 0 and df_dq[df_dq.columns[-2]][i] == 0 and dq_indexes_dict[i] not in [1,15,16,18,19,20]:
             current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])
             
-            df_dq_copy['Comment Formation'][i] = 'Trend Break, ' + str(current_month_value) + ' flag(s) reported'
+            df_dq_copy['Comment Formation'][i] = 'Trend Break, ' + str(current_month_value) + ' flag(s) reported.'
+            
+            if dq_indexes_dict[i] == 18:
+                zip_code_comment = dq_zip_code_analysis.zip_code_analysis(dq_zip_code_file_path)
+                df_dq_copy['Comment Formation'][i] += " " + str(current_month_value) + " flags reported " + zip_code_comment + ", observed in past. Pass."
+            
+            if dq_indexes_dict[i] == 19:
+                unknown_roche_ndc_comment = dq_unknown_roche_ndc.dq_unknown_roche_analysis(dq_config_file_path,dq_unknown_roche_ndc_file_path)
+                df_dq_copy['Comment Formation'][i] += " " + str(current_month_value) + " flags reported across " + unknown_roche_ndc_comment
     
     # with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
     #     df_dq_copy.to_excel(writer, sheet_name=supplier_name + " DQ")

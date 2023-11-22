@@ -162,22 +162,22 @@ list_of_dataframes = [df_dq, df_outs, bo_analysis_df, branch_pivot, unreported_n
 names_of_dataframes = [supplier_name + " DQ", supplier_name + " BO", supplier_name + " BO Analysis", supplier_name + " Branch Pivot", supplier_name + " Unreported NDCs", supplier_name + " Unreported Branches", supplier_name + " Combined Ins Pivot"]
 
 book = xw.Book(output_path)
-for iter, df in enumerate(list_of_dataframes):
+for iter, df_op in enumerate(list_of_dataframes):
     last_sheet_name = book.sheets[-1].name
+    if df_op is not None:
+        try:
+            #creating new sheet at end of File
+            book.sheets.add(names_of_dataframes[iter], after=last_sheet_name)
+        except:
+            print(names_of_dataframes[iter] + " Sheet already exists in master file")
+        
+        try:
+            ws = book.sheets[names_of_dataframes[iter]]
+            ws["A1"].options(pd.DataFrame, header=1, index=True, expand='table').value = df_op
+        except:
+            print(names_of_dataframes[iter] + " DF not inserted")
 
-    try:
-        #creating new sheet at end of File
-        book.sheets.add(names_of_dataframes[iter], after=last_sheet_name)
-    except:
-        print("Sheet already exists in master file")
-    
-    try:
-        ws = book.sheets[names_of_dataframes[iter]]
-        ws["A1"].options(pd.DataFrame, header=1, index=True, expand='table').value = df
-    except:
-        print(names_of_dataframes[iter] + " DF not inserted")
-
-    ws.autofit()
+        ws.autofit()
 
 book.save()
 book.close()
