@@ -58,6 +58,7 @@ tpc_df = None
 df = None
 data_month_dq_df = None
 df_dq = None
+branch_pivot = None
 dq_indexes_dict = {}
 
 try:
@@ -145,7 +146,7 @@ if df is not None:
         df_dq = df_dq.drop(df_dq.columns[-1], axis = 1)
     
     except:
-        print("New Month DQ File not provided")
+        print("New Month DQ File not provided/ Some error Occurred while appending DQ Column to Main table")
 
     #Creating dictionary for storing Parameter Name and their index position
     count = 1
@@ -178,6 +179,7 @@ def comment_generation():
         #Comment content variables
         threshold_check = ''
         trend_check = ''
+        comment = ''
 
         #Comment formation main loop
         for i in df_dq.index[1:]:                                          #Parameter index starting from 1, 'i' is parameter
@@ -362,21 +364,29 @@ def comment_generation():
 
                 df_dq_copy['Comment Formation'][i] = comment
                 
+                if dq_indexes_dict[i] == 4:           #Branch analysis
+                    try:
+                        branch_comment, branch_pivot = dq_branch_analysis.dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch_dq_file_path,previous_month_branch_dq_file_path, output_path)
+                        df_dq_copy['Comment Formation'][i] += " " + branch_comment
+                    except:
+                        print("Branch Analysis function did not run, while running DQ analysis")
+
                 if dq_indexes_dict[i] == 6:
                     df_dq_copy['Comment Formation'][i] += " Matching with BO(" + str(current_month_value) + "). Pass."
                 
                 if dq_indexes_dict[i] == 18:
-                    zip_code_comment = dq_zip_code_analysis.zip_code_analysis(dq_zip_code_file_path)
-                    df_dq_copy['Comment Formation'][i] += " " + str(current_month_value) + " flags reported " + zip_code_comment + ", observed in past. Pass."
+                    try:
+                        zip_code_comment = dq_zip_code_analysis.zip_code_analysis(dq_zip_code_file_path)
+                        df_dq_copy['Comment Formation'][i] += " " + str(current_month_value) + " flags reported " + zip_code_comment + ", observed in past. Pass."
+                    except:
+                        print("ZIP Code analysis function did not run")
                 
                 if dq_indexes_dict[i] == 19:
-                    unknown_roche_ndc_comment = dq_unknown_roche_ndc.dq_unknown_roche_analysis(dq_config_file_path,dq_unknown_roche_ndc_file_path)
-                    df_dq_copy['Comment Formation'][i] += " " + str(current_month_value) + " flags reported across " + unknown_roche_ndc_comment
-
-                if dq_indexes_dict[i] == 4:           #Branch analysis
-                    branch_pivot = None
-                    branch_comment, branch_pivot = dq_branch_analysis.dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch_dq_file_path,previous_month_branch_dq_file_path, output_path)
-                    df_dq_copy['Comment Formation'][i] += " " + branch_comment
+                    try:
+                        unknown_roche_ndc_comment = dq_unknown_roche_ndc.dq_unknown_roche_analysis(dq_config_file_path,dq_unknown_roche_ndc_file_path)
+                        df_dq_copy['Comment Formation'][i] += " " + str(current_month_value) + " flags reported across " + unknown_roche_ndc_comment
+                    except:
+                        print("Unknown Roche NDC analysis function did not run")
 
             elif df_dq[df_dq.columns[-1]][i] != 0 and df_dq[df_dq.columns[-2]][i] == 0 and dq_indexes_dict[i] not in [1,15,16,18,19,20]:
                 current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])
@@ -384,28 +394,19 @@ def comment_generation():
                 df_dq_copy['Comment Formation'][i] = 'Trend Break, ' + str(current_month_value) + ' flag(s) reported.'
                 
                 if dq_indexes_dict[i] == 18:
-                    zip_code_comment = dq_zip_code_analysis.zip_code_analysis(dq_zip_code_file_path)
-                    df_dq_copy['Comment Formation'][i] += " " + str(current_month_value) + " flags reported " + zip_code_comment + ", observed in past. Pass."
+                    try:
+                        zip_code_comment = dq_zip_code_analysis.zip_code_analysis(dq_zip_code_file_path)
+                        df_dq_copy['Comment Formation'][i] += " " + str(current_month_value) + " flags reported " + zip_code_comment + ", observed in past. Pass."
+                    except:
+                        print("ZIP Code analysis function did not run")
                 
                 if dq_indexes_dict[i] == 19:
-                    unknown_roche_ndc_comment = dq_unknown_roche_ndc.dq_unknown_roche_analysis(dq_config_file_path,dq_unknown_roche_ndc_file_path)
-                    df_dq_copy['Comment Formation'][i] += " " + str(current_month_value) + " flags reported across " + unknown_roche_ndc_comment
-        
-        # with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists="replace") as writer:
-        #     df_dq_copy.to_excel(writer, sheet_name=supplier_name + " DQ")
-        
-        # print("q")
-        # with open('pharmacare_dfs.csv','a') as f:
-        #     df_dq_copy.to_csv(f)
-        #     f.write("\n")
-        # print("z")
+                    try:
+                        unknown_roche_ndc_comment = dq_unknown_roche_ndc.dq_unknown_roche_analysis(dq_config_file_path,dq_unknown_roche_ndc_file_path)
+                        df_dq_copy['Comment Formation'][i] += " " + str(current_month_value) + " flags reported across " + unknown_roche_ndc_comment
+                    except:
+                        print("Unknown Roche NDC analysis function did not run")
 
         return df_dq_copy, branch_pivot
     else:
         return None, None
-
-# comment_generation()
-
-# months = {1:"JAN",2:"FEB",3:"MAR",4:"APR",5:"MAY",6:"JUN",7:"JUL",8:"AUG",9:"SEP",10:"OCT",11:"NOV",12:"DEC"}
-# output_destination_path = supplier_folder_path + "\\" + supplier_name + "_" + months[(date.today().month - 1)] + str(data_month_year)[-2:] + ".xlsx"
-# os.rename(output_path,output_destination_path)

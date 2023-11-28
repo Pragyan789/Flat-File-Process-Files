@@ -124,7 +124,8 @@ ins_pivot_output = None
 df_outs = None
 
 # Calling main analysis function
-bo_analysis_df, ins_pivot_output, df_outs = bo_analysis_functions.bo_and_sap_analysis(ins_pivot, outs_pivot, sap_ins_pivot, supplier_name, output_path)
+if outs_pivot is not None:
+    bo_analysis_df, ins_pivot_output, df_outs = bo_analysis_functions.bo_and_sap_analysis(ins_pivot, outs_pivot, sap_ins_pivot, supplier_name)
 
 unreported_ndc_pivot_df = None
 unreported_branches_pivot_df = None

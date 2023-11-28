@@ -111,7 +111,7 @@ def sap_ins_pivot_creation(sap_ins_df, sap_filter_list_df, data_month, data_mont
         return None
 
 
-def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name, output_path):
+def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name):
     if df_outs is not None:
         #List of Sap only analysis suppliers
         sap_only_suppliers = ["NYBC", "CIBD", "SUPERIOR BIOLOGICS", "HPC LLC", "HOG", "INFUCARERX"]
