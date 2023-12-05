@@ -215,7 +215,7 @@ def comment_generation():
                     if df_dq[df_dq.columns[-1]][i] != 0:
                         current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])
 
-                        comment_qty_max = str(current_month_value) + " flag(s) reported for: "
+                        comment_qty_max = str(current_month_value) + " flag(s) reported: "
                         # comment_qty_max_list = dq_qty_min_max_analysis.qty_max_analysis(txn_count_file_path, dq_qty_max_file_path)
                         # for comment in comment_qty_max_list:
                         #     comment_qty_max += comment + ", "

@@ -75,7 +75,7 @@ def qty_max_analysis(txn_count_file_path, dq_qty_max_file_path):
                     
                     border_line_comment_list.append(str(int(i)) + " with qty dispensed " + str(Quantity_Dispensed_ndc_max) + " followed by " + str(max(qty_list)) + " in " + str(next_max_month) + " " + str(next_max_year))
                 else:
-                    fail_ndc_list.append(i)                      #this list is not being used
+                    fail_ndc_list.append(str(int(i)) + " with qty dispensed " + str(Quantity_Dispensed_ndc_max))                      #this list is not being used
                     
                     # comments_max.append(str(int(i)) + " with qty dispensed " + str(Quantity_Dispensed_ndc_max) + " has high delta, needs to be verified")
             
@@ -139,13 +139,13 @@ def qty_min_analysis(txn_count_file_path, dq_qty_min_file_path):
                 df_ndc["Month Year"] = df_ndc["FILE_DATE_OF_REPORT"].apply(lambda val: str(val.month) + " " + str(val.year))
                 df_ndc = df_ndc.loc[(df_ndc["Month Year"] != str(data_month) + " " + str(data_month_year))]
                 
-                #list that contains all 'MAX_QTY' for particular NDC, sorted in descending order
+                #list that contains all 'MIN_QTY' for particular NDC, sorted in descending order
                 qty_list = list(df_ndc["MIN_QTY"].sort_values())
                 
                 #calculating variance between current month reported qty and min qty in qty_list
                 #delta = (abs(Quantity_Dispensed_ndc_min) - abs(min(qty_list)))/abs(Quantity_Dispensed_ndc_min)
                 
-                if min(qty_list) >= Quantity_Dispensed_ndc_min:
+                if min(qty_list) <= Quantity_Dispensed_ndc_min:
                     pass_ndc_list.append(int(i))
                     
                     # comments_min.append(str(int(i)) +  ", similar observed in the past and no inconsistencies observed with return volumes")
@@ -156,10 +156,10 @@ def qty_min_analysis(txn_count_file_path, dq_qty_min_file_path):
                 #     df_1 = df_ndc.sort_values(by=["MIN_QTY"])                                             #creating a dataframe sorted with largest MIN_QTY as top row
                 #     next_min_month = df_1.iloc[0]["FILE_DATE_OF_REPORT"].month_name(locale='English')     #Extracting month and year of next maximum MIN_QTY
                 #     next_min_year = df_1.iloc[0]["FILE_DATE_OF_REPORT"].year
-                    
+
                 #     comments_min.append(str(int(i)) + " with qty dispensed " + str(Quantity_Dispensed_ndc_min) + " followed by " + str(min(qty_list)) + " in " + str(next_min_month) + " " + str(next_min_year))
                 else:
-                    fail_ndc_list.append(int(i))
+                    fail_ndc_list.append(str(int(i)) + ": " + str(Quantity_Dispensed_ndc_min))
                     
                     # comments_min.append(str(int(i)) + " with qty dispensed " + str(Quantity_Dispensed_ndc_min) + " has high delta, needs to be verified")
         if pass_ndc_list:
