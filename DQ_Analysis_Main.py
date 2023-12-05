@@ -19,6 +19,7 @@ import dq_uom_inconsistencies
 #IMP: Code inside ***/*** block will need to be modified if source file format is changed
 #***
 
+# Hardcoded value
 df = pd.read_excel(r"C:\Users\pragyan.agrawal\OneDrive - Incedo Technology Solutions Ltd\Desktop\Raw_Files_Folder\Input Paths.xlsx")
 df = df.set_index('Variable Name')
 df = df.fillna("")
@@ -270,7 +271,10 @@ def comment_generation():
                         if df_dq[col][i]==0:
                             param_value_dict[df_dq[col]['Month']] = 0
                         else:
-                            param_value_dict[df_dq[col]['Month']]=int(df_dq[col][i][df_dq[col][i].find("(")+1:df_dq[col][i].find("/")])
+                            try:
+                                param_value_dict[df_dq[col]['Month']]=int(df_dq[col][i][df_dq[col][i].find("(")+1:df_dq[col][i].find("/")])
+                            except:
+                                param_value_dict[df_dq[col]['Month']] = 0
                     
                     if calculated_variance <= param_dq_threshold_vals_dict[i]:
                         threshold_check = 'Within' 
@@ -325,7 +329,10 @@ def comment_generation():
                         if df_dq[col][i]==0:
                             param_value_dict[df_dq[col]['Month']] = 0
                         else:
-                            param_value_dict[df_dq[col]['Month']]=int(df_dq[col][i][df_dq[col][i].find("(")+1:df_dq[col][i].find("/")])
+                            try:
+                                param_value_dict[df_dq[col]['Month']]=int(df_dq[col][i][df_dq[col][i].find("(")+1:df_dq[col][i].find("/")])
+                            except:
+                                param_value_dict[df_dq[col]['Month']] = 0
                     
                     if calculated_variance_ws <= param_dq_threshold_vals_dict[i]:
                         threshold_check = 'Within' 
