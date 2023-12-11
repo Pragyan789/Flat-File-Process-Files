@@ -165,6 +165,7 @@ def comment_generation():
         df_dq_copy = df_dq.copy()                                          #creating deep copy of df_dq
         df_dq_copy['Variance'] = None
         df_dq_copy['Comment Formation'] = None
+        branch_pivot = None
 
         #Creating dictionary for storing threshold limits for each parameter
         param_dq_threshold_vals_dict = {}
@@ -376,6 +377,7 @@ def comment_generation():
                         branch_comment, branch_pivot = dq_branch_analysis.dq_non_trending_branch_analysis(branch_report_file_path,current_month_branch_dq_file_path,previous_month_branch_dq_file_path, output_path)
                         df_dq_copy['Comment Formation'][i] += " " + branch_comment
                     except:
+                        branch_pivot = None
                         print("Branch Analysis function did not run, while running DQ analysis")
 
                 if dq_indexes_dict[i] == 6:
