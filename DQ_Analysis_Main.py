@@ -128,15 +128,15 @@ if df is not None:
         
         #Inserting New Data month Column into Main DQ table
         #Import File ID code to be written
-        
-        df_dq.insert(len(df_dq.columns)-1,f'File ID : {file_id}',data_month_dq_df[2])    #Column is inserted according to corresponding index values
 
+        #(position, column_name, data)
+        df_dq.insert(len(df_dq.columns)-1,f'File ID : {file_id}',data_month_dq_df[2])    #Column is inserted according to corresponding index names
+        
         #Assigning current month and year to a string
         data_month = (date.today() - pd.offsets.DateOffset(months=1))
         data_month_words = data_month.month_name(locale = 'English')
         data_month_year = data_month.year
         data_month_str = data_month_words+" "+str(data_month_year)
-
         #Assigning string to column name
         last_column_dq = np.argwhere(df_dq.values=='Comments')[0][1]
 
@@ -145,6 +145,8 @@ if df is not None:
         #Dropping comments column
         df_comments = pd.DataFrame(df_dq[df_dq.columns[-1]])
         df_dq = df_dq.drop(df_dq.columns[-1], axis = 1)
+
+        print(df_dq)
     
     except:
         print("New Month DQ File not provided/ Some error Occurred while appending DQ Column to Main table")

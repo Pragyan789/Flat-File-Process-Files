@@ -161,7 +161,7 @@ df_dq, branch_pivot = DQ_Analysis_Main.comment_generation()
 
 #Output_File:
 list_of_dataframes = [df_dq, df_outs, ins_pivot, bo_analysis_df, branch_pivot, unreported_ndc_pivot_df, unreported_branches_pivot_df, sender_by_ndc_pivot]
-names_of_dataframes = [supplier_name + " DQ", supplier_name + " BO", supplier_name + " Combined Ins Pivot", supplier_name + " BO Analysis", supplier_name + " Branch Pivot", supplier_name + " Unreported NDCs", supplier_name + " Unreported Branches", supplier_name + " Sender by NDC"]
+names_of_dataframes = [supplier_name + " DQ", supplier_name + " BO", supplier_name + " Ins Pivot", supplier_name + " BO Analysis", supplier_name + " Branch Pivot", supplier_name + " U_NDCs", supplier_name + " U_Branches", supplier_name + " S_by_NDC"]
 
 book = xw.Book(output_path)
 for iter, df_op in enumerate(list_of_dataframes):
@@ -171,7 +171,7 @@ for iter, df_op in enumerate(list_of_dataframes):
             #creating new sheet at end of File
             book.sheets.add(names_of_dataframes[iter], after=last_sheet_name)
         except:
-            print(names_of_dataframes[iter] + " Sheet already exists in master file")
+            print(names_of_dataframes[iter] + " Sheet not inserted")
         
         try:
             ws = book.sheets[names_of_dataframes[iter]]

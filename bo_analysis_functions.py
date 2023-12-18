@@ -7,6 +7,9 @@ def df_ins_pivot_creation(df_ins, reference_list_df, data_month, data_month_year
     if df_ins is not None:
         df_combined_ins = df_ins
 
+        if 'ID1_VALUE_1' in df_combined_ins.columns:
+            df_combined_ins.rename(columns = {'ID1_VALUE_1':'ID1_VALUE.1'}, inplace = True)
+
         if reference_list_df is not None:
             reference_list_df = reference_list_df.fillna('')
 
@@ -17,10 +20,10 @@ def df_ins_pivot_creation(df_ins, reference_list_df, data_month, data_month_year
                 df_combined_ins.rename(columns = {'NAME':'Account Name'}, inplace = True)
                 df_combined_ins = pd.merge(df_combined_ins, reference_list_df[reference_list_df['Account Name']!='']['Account Name'], on='Account Name', how='inner')
             if len(reference_list_df[reference_list_df['ID1_VALUE.1']!='']['ID1_VALUE.1']) != 0:
-                try:
-                    df_combined_ins = pd.merge(df_combined_ins, reference_list_df[reference_list_df['ID1_VALUE.1']!='']['ID1_VALUE.1'], on='ID1_VALUE.1', how='inner')
-                except:
-                    df_combined_ins = pd.merge(df_combined_ins, reference_list_df[reference_list_df['ID1_VALUE.1']!='']['ID1_VALUE_1'], on='ID1_VALUE_1', how='inner')
+                # try:
+                df_combined_ins = pd.merge(df_combined_ins, reference_list_df[reference_list_df['ID1_VALUE.1']!='']['ID1_VALUE.1'], on='ID1_VALUE.1', how='inner')
+                # except:
+                #     df_combined_ins = pd.merge(df_combined_ins, reference_list_df[reference_list_df['ID1_VALUE.1']!='']['ID1_VALUE.1'], on='ID1_VALUE_1', how='inner')
             if len(reference_list_df[reference_list_df['CITY']!='']['CITY']) != 0:
                 df_combined_ins = pd.merge(df_combined_ins, reference_list_df[reference_list_df['CITY']!='']['CITY'], on='CITY', how='inner')
             if len(reference_list_df[reference_list_df['STATE']!='']['STATE']) != 0:
@@ -207,6 +210,14 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name):
                         else:
                             total_ins_list = list(pivot.loc[int(ndc)])
                             ins_list = list(pivot.loc[int(ndc)])
+                    elif pivot is not None and int(ndc) in pivot.index and supplier_name in sap_only_suppliers:
+                        if int(ndc) in sap_ins_pivot.index:
+                            total_ins_list = list(pivot.loc[int(ndc)] + sap_ins_pivot.loc[int(ndc)])
+                            ins_list = list(pivot.loc[int(ndc)])
+                            sap_ins_list = list(sap_ins_pivot.loc[int(ndc)])
+                        else:
+                            total_ins_list = list(pivot.loc[int(ndc)])
+                            ins_list = list(pivot.loc[int(ndc)])
                     else:
                         total_ins_list = list(sap_ins_pivot.loc[int(ndc)])
                         sap_ins_list = list(sap_ins_pivot.loc[int(ndc)])
@@ -252,6 +263,11 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name):
                 #Following will calculate total sum of Ins and Sapins (whichever is present), for each ndc with trend break
                 try:
                     if pivot is not None and int(i) in total_ins_df.index and supplier_name not in sap_only_suppliers:
+                        if int(i) in total_sap_ins_df.index:
+                            Sum_ins = int(total_ins_df.loc[int(i)])+int(total_sap_ins_df.loc[int(i)])
+                        else:
+                            Sum_ins = int(total_ins_df.loc[int(i)])
+                    elif pivot is not None and int(i) in total_ins_df.index and supplier_name in sap_only_suppliers:
                         if int(i) in total_sap_ins_df.index:
                             Sum_ins = int(total_ins_df.loc[int(i)])+int(total_sap_ins_df.loc[int(i)])
                         else:
