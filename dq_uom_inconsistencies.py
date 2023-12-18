@@ -68,18 +68,18 @@ def dq_uom_inconsistencies_analysis(dq_uom_inconsistencies_file_path, raw_data_f
                 
                 #Case when raw qty is integer, which is incorrectly divided by factoring value
                 elif raw_qty_list[j].is_integer():
-                    if factoring_value != 0 and qty_dispensed_list[j].is_integer != True:
+                    if factoring_value != 0 and qty_dispensed_list[j].is_integer() != True:
                         if round((raw_qty_list[j]/factoring_value),3) == round(qty_dispensed_list[j],3):
                             comments+=str(qty_dispensed_list[j]) + " to be manually changed to " + str(raw_qty_list[j]) + " for NDC " + str(int(ndc)) + "; "
                         else:
                             comments+="QTY Dispensed- " + str(qty_dispensed_list[j]) + ", Raw Data - " + str(raw_qty_list[j]) + " for NDC " + str(int(ndc)) + ", needs to be verified; "
-                    elif factoring_value2 != 0 and qty_dispensed_list[j].is_integer != True:
+                    elif factoring_value2 != 0 and qty_dispensed_list[j].is_integer() != True:
                         if round((raw_qty_list[j]/factoring_value2),3) == round(qty_dispensed_list[j],3):
                             comments+=str(qty_dispensed_list[j]) + " to be manually changed to " + str(raw_qty_list[j]) + " for NDC " + str(int(ndc)) + "; "
                         else:
                             comments+="QTY Dispensed- " + str(qty_dispensed_list[j]) + ", Raw Data - " + str(raw_qty_list[j]) + " for NDC " + str(int(ndc)) + ", needs to be verified; "
-                    elif (factoring_value != 0 or factoring_value2 != 0) and qty_dispensed_list[j].is_integer == True:
-                        comments+= "QTY Dispensed- " + str(qty_dispensed_list[j]) + " for NDC " + str(int(ndc)) + " is non-decimal, False Flag, Pass."
+                    elif (factoring_value != 0 or factoring_value2 != 0) and qty_dispensed_list[j].is_integer() == True:
+                        comments+= "QTY Dispensed- " + str(qty_dispensed_list[j]) + " for NDC " + str(int(ndc)) + " is non-decimal, False Flag, Pass; "
                     if factoring_value == 0 and factoring_value2 == 0:
                         comments+="Factoring value unknown for NDC " + str(int(ndc)) + "; "
                 

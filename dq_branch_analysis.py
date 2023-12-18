@@ -125,6 +125,9 @@ def dq_non_trending_branch_analysis(branch_report_file_path, current_month_branc
             #Comment formation
             comment = ''
             for branch in non_trending_branches:
+                if branch.is_integer():
+                    branch = str(int(branch))
+                
                 if selected_data.loc[branch]['Comment']=="":
                     if selected_data.loc[branch][currentdata_month] == 0:
                         if 1 < selected_data[selected_data.columns[1:]].loc[branch].astype(bool).sum(axis=0) < 12:
