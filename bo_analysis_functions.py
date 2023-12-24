@@ -115,6 +115,8 @@ def sap_ins_pivot_creation(sap_ins_df, sap_filter_list_df, data_month, data_mont
 
 
 def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name):
+    df_trend_break = None
+    
     if df_outs is not None:
         #List of Sap only analysis suppliers
         sap_only_suppliers = ["NYBC", "CIBD", "SUPERIOR BIOLOGICS", "HPC LLC", "HOG", "INFUCARERX"]
@@ -188,143 +190,143 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name):
         df_variance = pd.DataFrame().reindex_like(df_outs_only).fillna(0)
 
         bo_analysis_df = pd.DataFrame()                    #creating new empty dataframe
+        if df_trend_break is not None:
+            for ndc in df_trend_break.index:
+                ins_list = [0]*13
+                sap_ins_list = [0]*13
 
-        for ndc in df_trend_break.index:
-            ins_list = [0]*13
-            sap_ins_list = [0]*13
-
-            if sap_ins_pivot is None and pivot is not None:                      #For Suppliers with Sapins
-                try:
-                    total_ins_list = list(pivot.loc[int(ndc)])
-                    ins_list = list(pivot.loc[int(ndc)])
-                except:
-                    total_ins_list = [0]*13                      #ins not present, appending 0's
-            else:
-                #Following will calculate month wise sum of Ins and Sapins (whichever is present), for each ndc with trend break
-                try:
-                    if pivot is not None and int(ndc) in pivot.index and supplier_name not in sap_only_suppliers:
-                        if int(ndc) in sap_ins_pivot.index:
-                            total_ins_list = list(pivot.loc[int(ndc)] + sap_ins_pivot.loc[int(ndc)])
-                            ins_list = list(pivot.loc[int(ndc)])
-                            sap_ins_list = list(sap_ins_pivot.loc[int(ndc)])
-                        else:
-                            total_ins_list = list(pivot.loc[int(ndc)])
-                            ins_list = list(pivot.loc[int(ndc)])
-                    elif pivot is not None and int(ndc) in pivot.index and supplier_name in sap_only_suppliers:
-                        if int(ndc) in sap_ins_pivot.index:
-                            total_ins_list = list(pivot.loc[int(ndc)] + sap_ins_pivot.loc[int(ndc)])
-                            ins_list = list(pivot.loc[int(ndc)])
-                            sap_ins_list = list(sap_ins_pivot.loc[int(ndc)])
-                        else:
-                            total_ins_list = list(pivot.loc[int(ndc)])
-                            ins_list = list(pivot.loc[int(ndc)])
-                    else:
-                        total_ins_list = list(sap_ins_pivot.loc[int(ndc)])
-                        sap_ins_list = list(sap_ins_pivot.loc[int(ndc)])
-                except:
-                    total_ins_list = [0]*13
-            
-            #outs sum month wise
-            outs_list = list(df_outs_only.loc[ndc])
-            
-            result = [a - b for a, b in zip(outs_list, total_ins_list)]
-            df_variance.loc[ndc] = result
-            
-            #Creating Outs and Ins Analysis table:
-            multiindex_arrays = [
-            np.array([ndc, ndc, ndc, ndc, ndc]),
-            np.array(["OUTs", "Sells Ins", "SAP Ins", "Total Ins", "Variance"]),
-            ]
-            
-            #Creating multiindex dataframe with Outs, Ins, Variance for each NDC:
-            try:
-                bo_analysis_df = pd.concat([bo_analysis_df,pd.DataFrame([outs_list,ins_list,sap_ins_list,total_ins_list,result], index = multiindex_arrays)])
-            except:
-                print(ndc + " not inserted into BO Analysis Table")
-        
-        #Setting columns in newly created multiindex dataframe
-        bo_analysis_df.columns = df_outs_copy.columns
-
-        #Calculating variance percentage (Outs/Ins) for trend break NDCs
-        Sum_outs = 0
-        Sum_ins = 0
-        NDCs = []
-        Percentage = []
-        bo_analysis_df["Percentage"] = ""
-        bo_analysis_df["Comment"] = ""
-
-        for i in df_trend_break.index:
-            if sap_ins_pivot is None and pivot is not None:
-                try:
-                    Sum_ins = int(total_ins_df.loc[int(i)])
-                except:
-                    print(str(i) + " - ins not present")
-            else:
-                #Following will calculate total sum of Ins and Sapins (whichever is present), for each ndc with trend break
-                try:
-                    if pivot is not None and int(i) in total_ins_df.index and supplier_name not in sap_only_suppliers:
-                        if int(i) in total_sap_ins_df.index:
-                            Sum_ins = int(total_ins_df.loc[int(i)])+int(total_sap_ins_df.loc[int(i)])
-                        else:
-                            Sum_ins = int(total_ins_df.loc[int(i)])
-                    elif pivot is not None and int(i) in total_ins_df.index and supplier_name in sap_only_suppliers:
-                        if int(i) in total_sap_ins_df.index:
-                            Sum_ins = int(total_ins_df.loc[int(i)])+int(total_sap_ins_df.loc[int(i)])
-                        else:
-                            Sum_ins = int(total_ins_df.loc[int(i)])
-                    else:
-                        Sum_ins = int(total_sap_ins_df.loc[int(i)])
-                except:
-                    print(str(i) + " - ins not present")
-
-            Sum_outs = int(df_trend_break.loc[i])
-            NDCs.append(i)
-            try:
-                Percentage.append(int(round((Sum_outs/Sum_ins)*100,0)))
-            except:
-                Percentage.append(0)                                    #Appending 0 if ins are not present
-                print(str(i) + " - Ins = 0")
-
-        for iter, ndc in enumerate(NDCs):
-            #Adding Percentage column to bo_analysis_df
-            bo_analysis_df["Percentage"].loc[ndc,"OUTs"] = Percentage[iter]
-        
-        # Final_Output = pd.DataFrame(Percentage,index=NDCs,columns = ["Percentage"])
-
-        #dropping NDCs from 'df_variance' which are not required
-        for idx in df_variance.index:
-            if idx not in df_trend_break.index:
-                df_variance = df_variance.drop(idx,axis = 'index')
-
-        #Adding Comments for 'Pass' cases
-        # Final_Output["Comment"] = None
-
-        variance_list = []
-
-        for ndc in df_trend_break.index:
-            if bo_analysis_df["Percentage"].loc[ndc,"OUTs"] >= 95 and bo_analysis_df["Percentage"].loc[ndc,"OUTs"] <= 105:
-                if all(var == 0 for var in list(df_outs_only.loc[ndc])[:-1]):
-                    bo_analysis_df["Comment"].loc[ndc,"OUTs"] = "New NDC " + str(ndc) + ", pass via Sellsins"
+                if sap_ins_pivot is None and pivot is not None:                      #For Suppliers with Sapins
+                    try:
+                        total_ins_list = list(pivot.loc[int(ndc)])
+                        ins_list = list(pivot.loc[int(ndc)])
+                    except:
+                        total_ins_list = [0]*13                      #ins not present, appending 0's
                 else:
-                    bo_analysis_df["Comment"].loc[ndc,"OUTs"] = "Pass"
+                    #Following will calculate month wise sum of Ins and Sapins (whichever is present), for each ndc with trend break
+                    try:
+                        if pivot is not None and int(ndc) in pivot.index and supplier_name not in sap_only_suppliers:
+                            if int(ndc) in sap_ins_pivot.index:
+                                total_ins_list = list(pivot.loc[int(ndc)] + sap_ins_pivot.loc[int(ndc)])
+                                ins_list = list(pivot.loc[int(ndc)])
+                                sap_ins_list = list(sap_ins_pivot.loc[int(ndc)])
+                            else:
+                                total_ins_list = list(pivot.loc[int(ndc)])
+                                ins_list = list(pivot.loc[int(ndc)])
+                        elif pivot is not None and int(ndc) in pivot.index and supplier_name in sap_only_suppliers:
+                            if int(ndc) in sap_ins_pivot.index:
+                                total_ins_list = list(pivot.loc[int(ndc)] + sap_ins_pivot.loc[int(ndc)])
+                                ins_list = list(pivot.loc[int(ndc)])
+                                sap_ins_list = list(sap_ins_pivot.loc[int(ndc)])
+                            else:
+                                total_ins_list = list(pivot.loc[int(ndc)])
+                                ins_list = list(pivot.loc[int(ndc)])
+                        else:
+                            total_ins_list = list(sap_ins_pivot.loc[int(ndc)])
+                            sap_ins_list = list(sap_ins_pivot.loc[int(ndc)])
+                    except:
+                        total_ins_list = [0]*13
+                
+                #outs sum month wise
+                outs_list = list(df_outs_only.loc[ndc])
+                
+                result = [a - b for a, b in zip(outs_list, total_ins_list)]
+                df_variance.loc[ndc] = result
+                
+                #Creating Outs and Ins Analysis table:
+                multiindex_arrays = [
+                np.array([ndc, ndc, ndc, ndc, ndc]),
+                np.array(["OUTs", "Sells Ins", "SAP Ins", "Total Ins", "Variance"]),
+                ]
+                
+                #Creating multiindex dataframe with Outs, Ins, Variance for each NDC:
+                try:
+                    bo_analysis_df = pd.concat([bo_analysis_df,pd.DataFrame([outs_list,ins_list,sap_ins_list,total_ins_list,result], index = multiindex_arrays)])
+                except:
+                    print(ndc + " not inserted into BO Analysis Table")
+            
+            #Setting columns in newly created multiindex dataframe
+            bo_analysis_df.columns = df_outs_copy.columns
 
-            elif bo_analysis_df["Percentage"].loc[ndc,"OUTs"] == 0:
-                bo_analysis_df["Comment"].loc[ndc,"OUTs"] = "SellsIns seem incomplete"
-            else:
-                variance_list = list(df_variance.loc[ndc])
-                if bo_analysis_df["Percentage"].loc[ndc,"OUTs"] <=50 or bo_analysis_df["Percentage"].loc[ndc,"OUTs"] >=150:
-                    bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Very high variance, case to be monitored. "
+            #Calculating variance percentage (Outs/Ins) for trend break NDCs
+            Sum_outs = 0
+            Sum_ins = 0
+            NDCs = []
+            Percentage = []
+            bo_analysis_df["Percentage"] = ""
+            bo_analysis_df["Comment"] = ""
 
-                if variance_list[-1] == 0:
-                    bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Pass as inventory remained steady"
-                elif variance_list[-1] > 0:
-                    bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Pass as inventory went down by " + str(variance_list[-1]) + " this month"
-                elif any(var <= variance_list[-1] for var in variance_list[:-1]):
-                    bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Pass as similar/higher inventory observed in past"
-                elif all(var == 0 for var in variance_list[:-1]):
-                    bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "New NDC " + str(ndc)
+            for i in df_trend_break.index:
+                if sap_ins_pivot is None and pivot is not None:
+                    try:
+                        Sum_ins = int(total_ins_df.loc[int(i)])
+                    except:
+                        print(str(i) + " - ins not present")
                 else:
-                    bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Case to be monitored"
+                    #Following will calculate total sum of Ins and Sapins (whichever is present), for each ndc with trend break
+                    try:
+                        if pivot is not None and int(i) in total_ins_df.index and supplier_name not in sap_only_suppliers:
+                            if int(i) in total_sap_ins_df.index:
+                                Sum_ins = int(total_ins_df.loc[int(i)])+int(total_sap_ins_df.loc[int(i)])
+                            else:
+                                Sum_ins = int(total_ins_df.loc[int(i)])
+                        elif pivot is not None and int(i) in total_ins_df.index and supplier_name in sap_only_suppliers:
+                            if int(i) in total_sap_ins_df.index:
+                                Sum_ins = int(total_ins_df.loc[int(i)])+int(total_sap_ins_df.loc[int(i)])
+                            else:
+                                Sum_ins = int(total_ins_df.loc[int(i)])
+                        else:
+                            Sum_ins = int(total_sap_ins_df.loc[int(i)])
+                    except:
+                        print(str(i) + " - ins not present")
+
+                Sum_outs = int(df_trend_break.loc[i])
+                NDCs.append(i)
+                try:
+                    Percentage.append(int(round((Sum_outs/Sum_ins)*100,0)))
+                except:
+                    Percentage.append(0)                                    #Appending 0 if ins are not present
+                    print(str(i) + " - Ins = 0")
+
+            for iter, ndc in enumerate(NDCs):
+                #Adding Percentage column to bo_analysis_df
+                bo_analysis_df["Percentage"].loc[ndc,"OUTs"] = Percentage[iter]
+            
+            # Final_Output = pd.DataFrame(Percentage,index=NDCs,columns = ["Percentage"])
+
+            #dropping NDCs from 'df_variance' which are not required
+            for idx in df_variance.index:
+                if idx not in df_trend_break.index:
+                    df_variance = df_variance.drop(idx,axis = 'index')
+
+            #Adding Comments for 'Pass' cases
+            # Final_Output["Comment"] = None
+
+            variance_list = []
+
+            for ndc in df_trend_break.index:
+                if bo_analysis_df["Percentage"].loc[ndc,"OUTs"] >= 95 and bo_analysis_df["Percentage"].loc[ndc,"OUTs"] <= 105:
+                    if all(var == 0 for var in list(df_outs_only.loc[ndc])[:-1]):
+                        bo_analysis_df["Comment"].loc[ndc,"OUTs"] = "New NDC " + str(ndc) + ", pass via Sellsins"
+                    else:
+                        bo_analysis_df["Comment"].loc[ndc,"OUTs"] = "Pass"
+
+                elif bo_analysis_df["Percentage"].loc[ndc,"OUTs"] == 0:
+                    bo_analysis_df["Comment"].loc[ndc,"OUTs"] = "SellsIns seem incomplete"
+                else:
+                    variance_list = list(df_variance.loc[ndc])
+                    if bo_analysis_df["Percentage"].loc[ndc,"OUTs"] <=50 or bo_analysis_df["Percentage"].loc[ndc,"OUTs"] >=150:
+                        bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Very high variance, case to be monitored. "
+
+                    if variance_list[-1] == 0:
+                        bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Pass as inventory remained steady"
+                    elif variance_list[-1] > 0:
+                        bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Pass as inventory went down by " + str(variance_list[-1]) + " this month"
+                    elif any(var <= variance_list[-1] for var in variance_list[:-1]):
+                        bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Pass as similar/higher inventory observed in past"
+                    elif all(var == 0 for var in variance_list[:-1]):
+                        bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "New NDC " + str(ndc)
+                    else:
+                        bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Case to be monitored"
         
         return bo_analysis_df, pivot, df_outs
     else:
