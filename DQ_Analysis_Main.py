@@ -90,28 +90,38 @@ except:
     print('Path for Main file Incorrect/Missing')
 
 #Extracting DQ Table only from first sheet
-row_num = [0]
+# row_num = [0]
 try:
-    #Hardcoded value
-    row_num = df[df[df.columns[0]] == 'Validation Rule Description History'].index
+    #Hardcoded value, have added exception handling
+    row_num = df[df[df.columns[0]] == 'Validation Rule Description History'].index[0]
 except:
-    row_num[0] = 1
+    row_num = 1     #assuming that 'Validation Rule Description History' is present in 3rd row of raw dataframe.
+    df[df.columns[0]][row_num] = 'Validation Rule Description History'
 
-
+print(df)
 #Appending new data month DQ column into main table
 if df is not None:
     try:
-        df = pd.read_excel(main_file_path,skiprows = row_num[0]+1)
+        df = pd.read_excel(main_file_path,skiprows = row_num+1)
     except:
         print('Path for New Month DQ file Incorrect/Missing')
 
-    df['Validation Rule Description History'][0] = 'Month'
+    df[df.columns[0]][0] = 'Month'
 
-    #hardcoded value
-    last_column_dq = np.argwhere(df.values=='Comments')[0][1]
+    #below chunk of code is to get last column number of DQ table in supplier file
+    
+    #***
+    
+    col_num = 0
+    #get max column number from first 15 rows:
+    for i in range(0,15):
+        if list(df.iloc[i,:].isna()).count(False) > col_num:
+            col_num = list(df.iloc[i,:].isna()).count(False)
+    
+    last_column_dq = col_num
 
     #slicing dataframe with last row and last column
-    df_dq = df.iloc[:,:last_column_dq+1]
+    df_dq = df.iloc[:,:last_column_dq]
     df_dq = df_dq[:21]
 
     df_dq = df_dq.set_index(df_dq.columns[0])
@@ -125,29 +135,30 @@ if df is not None:
     try:
         data_month_dq_df = pd.read_excel(new_month_dq_file_path, header=None, index_col=0)
         data_month_dq_df = data_month_dq_df.fillna(0)
-        
-        #Inserting New Data month Column into Main DQ table
-        #Import File ID code to be written
 
-        #(position, column_name, data)
-        df_dq.insert(len(df_dq.columns)-1,f'File ID : {file_id}',data_month_dq_df[2])    #Column is inserted according to corresponding index names
+        ## Inserting New Data month Column into Main DQ table
+
+        #Dropping comments column
+        df_comments = pd.DataFrame(df_dq[df_dq.columns[-1]]) # storing old comments in case they are needed at some point
+        df_dq = df_dq.drop(df_dq.columns[-1], axis = 1)      # at this point last column is 'Comments' column
+
+        #setting index of new month DQ Table to the index of DQ Table from supplier file, in order to not get error values when inserting new column into master DQ table in supplier file.
+        data_month_dq_df = data_month_dq_df.set_index(df_dq.index[1:])
+
+        #Inserting new month DQ data column at end
         
+        #parameters : (position, column_name, data)
+        df_dq.insert(len(df_dq.columns),f'File ID : {file_id}',data_month_dq_df[2])    #Column is inserted according to corresponding index names
+
         #Assigning current month and year to a string
         data_month = (date.today() - pd.offsets.DateOffset(months=1))
         data_month_words = data_month.month_name(locale = 'English')
         data_month_year = data_month.year
         data_month_str = data_month_words+" "+str(data_month_year)
-        #Assigning string to column name
-        last_column_dq = np.argwhere(df_dq.values=='Comments')[0][1]
+        
+        #Setting new month name to newly appended column
+        df_dq[df_dq.columns[-1]][0] = data_month_str
 
-        df_dq[df_dq.columns[last_column_dq-1]][0] = data_month_str
-
-        #Dropping comments column
-        df_comments = pd.DataFrame(df_dq[df_dq.columns[-1]])
-        df_dq = df_dq.drop(df_dq.columns[-1], axis = 1)
-
-        print(df_dq)
-    
     except:
         print("New Month DQ File not provided/ Some error Occurred while appending DQ Column to Main table")
 
@@ -259,7 +270,7 @@ def comment_generation():
                         
 
             #Entering Condition for Recurring flags
-            
+
             elif df_dq[df_dq.columns[-1]][i] != 0 and df_dq[df_dq.columns[-2]][i] != 0:
                 if supplier_category.lower() in ['sp']:
                     current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])     #Extracting integer value from string of current month
@@ -417,6 +428,11 @@ def comment_generation():
                         df_dq_copy['Comment Formation'][i] += " " + str(current_month_value) + " flags reported across " + unknown_roche_ndc_comment
                     except:
                         print("Unknown Roche NDC analysis function did not run")
+        
+        try:
+            df_dq_copy = df_dq_copy.drop('Variance', axis=1)
+        except KeyError:
+            pass
 
         return df_dq_copy, branch_pivot
     else:

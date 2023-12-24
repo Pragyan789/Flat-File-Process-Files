@@ -141,7 +141,7 @@ if df is not None and df_outs_raw is not None:
     # Comment Variable has no use, just for sake of calling the function, it has been introduced here.
     comment = ''
     try:
-        comment, branch_pivot = dq_branch_analysis.dq_non_trending_branch_analysis(branch_report_file_path,'','', output_path)
+        comment, branch_pivot = dq_branch_analysis.dq_non_trending_branch_analysis(branch_report_file_path,'Inside BO Function','Inside BO Function', output_path)
     except:
         print("Branch analysis Function did not run properly")
     
