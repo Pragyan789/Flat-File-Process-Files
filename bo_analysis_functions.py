@@ -182,15 +182,16 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name):
             df_trend_break = pd.merge(total_outs_df,df_outs_modified,on="NDC")
         else:
             df_trend_break = pd.merge(total_outs_df,df_outs_modified,on="NDC").query("Trend_Break == True and Number_of_zeroes <= 4")
-        
+        print(df_trend_break)
         df_trend_break = pd.DataFrame(df_trend_break["Sum of QTY_DISPENSED"])   # inserting only 'Sum of QTY_DISPENSED' column
+        print(df_trend_break)
 
         #Following block of code is for calculating month wise variance
         df_outs_only = df_outs_modified.drop(["Trend_Break","Number_of_zeroes"],axis=1)
         df_variance = pd.DataFrame().reindex_like(df_outs_only).fillna(0)
 
         bo_analysis_df = pd.DataFrame()                    #creating new empty dataframe
-        if df_trend_break is not None:
+        if not df_trend_break.empty:
             for ndc in df_trend_break.index:
                 ins_list = [0]*13
                 sap_ins_list = [0]*13

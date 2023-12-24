@@ -98,7 +98,6 @@ except:
     row_num = 1     #assuming that 'Validation Rule Description History' is present in 3rd row of raw dataframe.
     df[df.columns[0]][row_num] = 'Validation Rule Description History'
 
-print(df)
 #Appending new data month DQ column into main table
 if df is not None:
     try:
