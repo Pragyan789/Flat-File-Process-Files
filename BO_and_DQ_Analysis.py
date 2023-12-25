@@ -59,10 +59,6 @@ try:
 except:
     print("Enter correct file path for BO Table File")
 try:
-    sap_ins_df = pd.read_excel(sap_ins_file_path,sheet_name=1)
-except:
-    print("Please enter correct path for Sapins file")
-try:
     sap_filter_list_df = pd.read_excel(sap_filter_list_path)
 except:
     print("Please enter correct path for Sapins filter list file")
@@ -92,11 +88,18 @@ outs_pivot = None
 branch_pivot = None
 sender_by_ndc_pivot = None
 
-if sap_ins_df is not None and sap_filter_list_df is not None:
+if sap_filter_list_df is not None:
+    # Reading SAP Data only if SAP Filters file path is provided
     try:
-        sap_ins_pivot = bo_analysis_functions.sap_ins_pivot_creation(sap_ins_df, sap_filter_list_df, data_month, data_month_year, start_month, start_year)
+        sap_ins_df = pd.read_excel(sap_ins_file_path,sheet_name=1)
     except:
-        print("Sapins Pivot creation Function did not execute properly")
+        print("Please enter correct path for Sapins file")
+
+    if sap_ins_df is not None:
+        try:
+            sap_ins_pivot = bo_analysis_functions.sap_ins_pivot_creation(sap_ins_df, sap_filter_list_df, data_month, data_month_year, start_month, start_year)
+        except:
+            print("Sapins Pivot creation Function did not execute properly")
 
 if df is not None:
     try:

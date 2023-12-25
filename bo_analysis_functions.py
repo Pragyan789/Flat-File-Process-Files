@@ -280,7 +280,7 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name):
                     except:
                         print(str(i) + " - ins not present")
 
-                Sum_outs = int(df_trend_break.loc[i])
+                Sum_outs = float(df_trend_break.loc[i])
                 NDCs.append(i)
                 try:
                     Percentage.append(int(round((Sum_outs/Sum_ins)*100,0)))
