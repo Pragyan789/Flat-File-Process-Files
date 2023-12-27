@@ -23,7 +23,7 @@ to_char(c.TRANSACTION_ID) as CLD_DETAIL_COOKED_ID
 ,c.IMS_RX_ID,c.ETL_FILE_NAME
 FROM CLOAD_ETL.VW_CLOAD_DATA c
 WHERE c.received_file_id in ('156462')
-) cm
+) current_month
 join
 (
 Select c.SENDER,
@@ -49,14 +49,14 @@ to_char(c.TRANSACTION_ID) as CLD_DETAIL_COOKED_ID
 ,c.IMS_RX_ID,c.ETL_FILE_NAME
 FROM CLOAD_ETL.VW_CLOAD_DATA c
 WHERE c.received_file_id in ('153145', '153617', '154256', '154619', '155262', '155631', '155880', '156172')
-) pm
-on cm.invoice_value = pm.invoice_value and
-cm.MOST_RECENT_SHIP_DATE = pm.MOST_RECENT_SHIP_DATE and
-cm.LAST_NAME = pm.LAST_NAME and
-cm.FIRST_NAME = pm.FIRST_NAME and
-cm.ADDRESS = pm.ADDRESS and
-cm.BRANCH_DEA_ID = pm.BRANCH_DEA_ID and
-cm.NDC_NBR = pm.NDC_NBR and
-cm.PRODUCT_INFO = pm.PRODUCT_INFO and
-cm.QTY_DISPENSED = pm.QTY_DISPENSED
-where extract(month from cm.most_recent_ship_date) <> 9
+) previous_month
+on current_month.invoice_value = previous_month.invoice_value and
+current_month.MOST_RECENT_SHIP_DATE = previous_month.MOST_RECENT_SHIP_DATE and
+current_month.LAST_NAME = previous_month.LAST_NAME and
+current_month.FIRST_NAME = previous_month.FIRST_NAME and
+current_month.ADDRESS = previous_month.ADDRESS and
+current_month.BRANCH_DEA_ID = previous_month.BRANCH_DEA_ID and
+current_month.NDC_NBR = previous_month.NDC_NBR and
+current_month.PRODUCT_INFO = previous_month.PRODUCT_INFO and
+current_month.QTY_DISPENSED = previous_month.QTY_DISPENSED
+where extract(month from current_month.most_recent_ship_date) <> 9
