@@ -69,15 +69,15 @@ except:
 
 #Get Data month (previous month), and 13 months before data month
 today = date.today()
-data_month = today.month - 1
+data_month = (date.today() - pd.offsets.DateOffset(months=1)).month
 data_month_year = (date.today() - pd.offsets.DateOffset(months=1)).year
 start_month = (date.today() - pd.offsets.DateOffset(months=13)).month
 start_year = (date.today() - pd.offsets.DateOffset(months=13)).year
 
-#For custom usage, comment it for automated updation
-# data_month = 9
+# For custom usage, comment it for automated updation
+# data_month = 11
 # data_month_year = 2023
-# start_month = 9
+# start_month = 11
 # start_year = 2022
 
 df_combined_ins = None
@@ -103,7 +103,7 @@ if sap_filter_list_df is not None:
 
 if df is not None:
     try:
-        #Here ins_branch_pivot is pivot created on Ins data with Index as id1_value.1, this is different from branch_pivot
+        # Here ins_branch_pivot is pivot created on Ins data with Index as id1_value.1, this is different from branch_pivot
         ins_pivot, ins_branch_pivot, sender_by_ndc_pivot, df_combined_ins = bo_analysis_functions.df_ins_pivot_creation(df, reference_list_df, data_month, data_month_year, start_month, start_year)
     except:
         print("Ins Pivot creation Function did not execute properly")
@@ -163,18 +163,19 @@ df_dq, branch_pivot = DQ_Analysis_Main.comment_generation()
 #     print("DQ Function did not run correctly")
 
 #Output_File:
-list_of_dataframes = [df_dq, df_outs, ins_pivot, bo_analysis_df, branch_pivot, unreported_ndc_pivot_df, unreported_branches_pivot_df, sender_by_ndc_pivot]
-names_of_dataframes = [supplier_name + " DQ", supplier_name + " BO", supplier_name + " Ins Pivot", supplier_name + " BO Analysis", supplier_name + " Branch Pivot", supplier_name + " U_NDCs", supplier_name + " U_Branches", supplier_name + " S_by_NDC"]
+list_of_dataframes = [sender_by_ndc_pivot, unreported_branches_pivot_df, unreported_ndc_pivot_df, branch_pivot, bo_analysis_df, ins_pivot, df_outs, df_dq]
+names_of_dataframes = [supplier_name + " S_by_NDC", supplier_name + " U_Branches", supplier_name + " U_NDCs", supplier_name + " Branch Pivot", supplier_name + " BO Analysis", supplier_name + " Ins Pivot", supplier_name + " BO", supplier_name + " DQ"]
 
 book = xw.Book(output_path)
 for iter, df_op in enumerate(list_of_dataframes):
-    last_sheet_name = book.sheets[-1].name
+    # last_sheet_name = book.sheets[-1].name
+    first_sheet_name = book.sheets[0].name
     if df_op is not None:
         try:
             #creating new sheet at end of File
-            book.sheets.add(names_of_dataframes[iter], after=last_sheet_name)
+            book.sheets.add(names_of_dataframes[iter], before=first_sheet_name)
         except:
-            print(names_of_dataframes[iter] + " Sheet not inserted")
+            print(names_of_dataframes[iter] + " - new sheet not created/ already exists")
         
         try:
             ws = book.sheets[names_of_dataframes[iter]]
@@ -189,5 +190,5 @@ book.close()
 
 #Rename file to current Data month:
 months = {1:"JAN",2:"FEB",3:"MAR",4:"APR",5:"MAY",6:"JUN",7:"JUL",8:"AUG",9:"SEP",10:"OCT",11:"NOV",12:"DEC"}
-output_destination_path = supplier_folder_path + "\\" + supplier_name + "_" + months[(date.today().month - 1)] + str(data_month_year)[-2:] + ".xlsx"
+output_destination_path = supplier_folder_path + "\\" + supplier_name + "_" + months[(date.today() - pd.offsets.DateOffset(months=1)).month] + str(data_month_year)[-2:] + ".xlsx"
 os.rename(output_path,output_destination_path)

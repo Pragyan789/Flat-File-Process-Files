@@ -11,6 +11,7 @@ def dq_non_trending_branch_analysis(branch_report_file_path, current_month_branc
     branch_df = None
     orig_df_current_month_branch_dq = None
     orig_df_previous_month_branch_dq = None
+    branch_pivot = None
 
     try:
         branch_df = pd.read_excel(branch_report_file_path)

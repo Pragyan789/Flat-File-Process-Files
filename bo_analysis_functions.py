@@ -119,7 +119,7 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name):
     
     if df_outs is not None:
         #List of Sap only analysis suppliers
-        sap_only_suppliers = ["NYBC", "CIBD", "SUPERIOR BIOLOGICS", "HPC LLC", "HOG", "INFUCARERX"]
+        sap_only_suppliers = ["NYBC", "CIBD", "SUPERIOR BIOLOGICS", "HPC LLC", "HOG", "INFUCARERX", "BIOCARE"]
 
         total_ins_df = None
         #Combined Ins data preparation:
@@ -346,6 +346,12 @@ def unreported_ndc(ins_pivot, outs_pivot, output_path):
     for unr_ndc in unreported_ndc_pivot.index:
         if not str(unr_ndc).startswith('5'):
             ins_pivot_copy.loc[unr_ndc,"Comment"] = "Roche NDC, pass"
+        elif str(unr_ndc) in ['50242004110','50242004164']:
+            ins_pivot_copy.loc[unr_ndc,"Comment"] = "Cathflo pass"
+        elif str(unr_ndc) in ['50242082802','50242086002','50242086001','50242087701']:
+            ins_pivot_copy.loc[unr_ndc,"Comment"] = "Xofluza pass"
+        elif str(unr_ndc) in ['50242005121','50242005306']:
+            ins_pivot_copy.loc[unr_ndc,"Comment"] = "Rituxan pass"
         elif list(unreported_ndc_pivot.loc[unr_ndc])[-1] == 0:
             ins_pivot_copy.loc[unr_ndc,"Comment"] = "Pass as no recent purchases"
         elif list(unreported_ndc_pivot.loc[unr_ndc])[-1] < 0:

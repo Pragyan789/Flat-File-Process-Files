@@ -100,10 +100,16 @@ except:
 
 #Appending new data month DQ column into main table
 if df is not None:
-    try:
-        df = pd.read_excel(main_file_path,skiprows = row_num+1)
-    except:
-        print('Path for New Month DQ file Incorrect/Missing')
+    if 'Validation Rule Description History' in df.columns:
+        try:
+            df = pd.read_excel(main_file_path)
+        except:
+            print('Path for New Month DQ file Incorrect/Missing')
+    else:
+        try:
+            df = pd.read_excel(main_file_path,skiprows = row_num+1)
+        except:
+            print('Path for New Month DQ file Incorrect/Missing')
 
     df[df.columns[0]][0] = 'Month'
 
@@ -290,7 +296,7 @@ def comment_generation():
                                 param_value_dict[df_dq[col]['Month']] = 0
                     
                     if calculated_variance <= param_dq_threshold_vals_dict[i]:
-                        threshold_check = 'Within' 
+                        threshold_check = 'Within'
                     else:
                         threshold_check = 'Over'
                     
@@ -306,7 +312,7 @@ def comment_generation():
                     if trend_flag == True:
                         match_list = [list(param_value_dict.keys())[match_index]]   #fetches month corresponding to the index stored in 'match_index'
                         #comment generation:
-                        comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, trending with ' + str(match_list[0]) + '(' + str(current_month_value) + ').'
+                        comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, trending with ' + str(match_list[0].strftime('%b%Y')) + '(' + str(current_month_value) + ').'
                     else:
                         last_15_values_list = list(param_value_dict.values())[-16:]
                         variance = 1
@@ -322,7 +328,7 @@ def comment_generation():
                                     close_flag = True
                         close_list = [list(param_value_dict.keys())[-16:][close_index]]
                         #comment generation:
-                        comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, close in # of flags with ' + str(close_list[0]) + '(' + str(close_val) + ').'
+                        comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, close in # of flags with ' + str(close_list[0].strftime('%b%Y')) + '(' + str(close_val) + ').'
                     
                 elif supplier_category.lower() in ['w']:
                     # Extracting percentages in case of Wholesalers/SDs
@@ -364,7 +370,7 @@ def comment_generation():
                     if trend_flag == True:
                         match_list = [list(param_value_dict.keys())[match_index]]   #fetches month corresponding to the index stored in 'match_index'
                         #comment generation:
-                        comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, trending with ' + str(match_list[0]) + '(' + str(current_month_value) + ').'
+                        comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, trending with ' + str(match_list[0].strftime('%b%Y')) + '(' + str(current_month_value) + ').'
                     else:
                         last_15_values_list = list(param_value_dict.values())[-16:]
                         variance = 1
@@ -380,7 +386,7 @@ def comment_generation():
                                     close_flag = True
                         close_list = [list(param_value_dict.keys())[-16:][close_index]]
                         #comment generation:
-                        comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, close in # of flags with ' + str(close_list[0]) + '(' + str(close_val) + ').'
+                        comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, close in # of flags with ' + str(close_list[0].strftime('%b%Y')) + '(' + str(close_val) + ').'
 
                 df_dq_copy['Comment Formation'][i] = comment
                 
@@ -409,7 +415,7 @@ def comment_generation():
                     except:
                         print("Unknown Roche NDC analysis function did not run")
 
-            elif df_dq[df_dq.columns[-1]][i] != 0 and df_dq[df_dq.columns[-2]][i] == 0 and dq_indexes_dict[i] not in [1,15,16,18,19,20]:
+            elif df_dq[df_dq.columns[-1]][i] != 0 and df_dq[df_dq.columns[-2]][i] == 0 and dq_indexes_dict[i] not in [1,15,16,20]:
                 current_month_value = int(df_dq[df_dq.columns[-1]][i][df_dq[df_dq.columns[-1]][i].find("(")+1:df_dq[df_dq.columns[-1]][i].find("/")])
                 
                 df_dq_copy['Comment Formation'][i] = 'Trend Break, ' + str(current_month_value) + ' flag(s) reported.'
