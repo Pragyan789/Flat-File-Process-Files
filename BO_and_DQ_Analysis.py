@@ -190,5 +190,5 @@ book.close()
 
 #Rename file to current Data month:
 months = {1:"JAN",2:"FEB",3:"MAR",4:"APR",5:"MAY",6:"JUN",7:"JUL",8:"AUG",9:"SEP",10:"OCT",11:"NOV",12:"DEC"}
-output_destination_path = supplier_folder_path + "\\" + supplier_name + "_" + months[(date.today() - pd.offsets.DateOffset(months=1)).month] + str(data_month_year)[-2:] + ".xlsx"
+output_destination_path = supplier_folder_path + "\\" + supplier_name_raw + "_" + months[(date.today() - pd.offsets.DateOffset(months=1)).month] + str(data_month_year)[-2:] + ".xlsx"
 os.rename(output_path,output_destination_path)

@@ -312,7 +312,7 @@ def comment_generation():
                     if trend_flag == True:
                         match_list = [list(param_value_dict.keys())[match_index]]   #fetches month corresponding to the index stored in 'match_index'
                         #comment generation:
-                        comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, trending with ' + str(match_list[0].strftime('%b%Y')) + '(' + str(current_month_value) + ').'
+                        comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, trending with ' + str(match_list[0]) + '(' + str(current_month_value) + ').'
                     else:
                         last_15_values_list = list(param_value_dict.values())[-16:]
                         variance = 1
@@ -328,7 +328,7 @@ def comment_generation():
                                     close_flag = True
                         close_list = [list(param_value_dict.keys())[-16:][close_index]]
                         #comment generation:
-                        comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, close in # of flags with ' + str(close_list[0].strftime('%b%Y')) + '(' + str(close_val) + ').'
+                        comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, close in # of flags with ' + str(close_list[0]) + '(' + str(close_val) + ').'
                     
                 elif supplier_category.lower() in ['w']:
                     # Extracting percentages in case of Wholesalers/SDs
@@ -370,7 +370,7 @@ def comment_generation():
                     if trend_flag == True:
                         match_list = [list(param_value_dict.keys())[match_index]]   #fetches month corresponding to the index stored in 'match_index'
                         #comment generation:
-                        comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, trending with ' + str(match_list[0].strftime('%b%Y')) + '(' + str(current_month_value) + ').'
+                        comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, trending with ' + str(match_list[0]) + '(' + str(current_month_value) + ').'
                     else:
                         last_15_values_list = list(param_value_dict.values())[-16:]
                         variance = 1
@@ -386,7 +386,7 @@ def comment_generation():
                                     close_flag = True
                         close_list = [list(param_value_dict.keys())[-16:][close_index]]
                         #comment generation:
-                        comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, close in # of flags with ' + str(close_list[0].strftime('%b%Y')) + '(' + str(close_val) + ').'
+                        comment = threshold_check + ' ' + str(param_dq_threshold_vals_dict[i]) + '% threshold, close in # of flags with ' + str(close_list[0]) + '(' + str(close_val) + ').'
 
                 df_dq_copy['Comment Formation'][i] = comment
                 
