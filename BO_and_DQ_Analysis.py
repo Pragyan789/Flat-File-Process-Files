@@ -183,6 +183,17 @@ for iter, df_op in enumerate(list_of_dataframes):
         except:
             print(names_of_dataframes[iter] + " DF not inserted")
 
+        if iter == 4:
+            row = 6
+            while(book.sheets[supplier_name + " BO Analysis"].range("A" + str(row)).value != None):
+                book.sheets[supplier_name + " BO Analysis"].range("A"+str(row)+":Z"+str(row)).font.color = "#ff0000"
+                row += 5
+        
+        if iter in [0,1,2,3,5,7]:
+            book.sheets[names_of_dataframes[iter]].range("A1:ZZ2").font.bold = True
+        if iter in [4,6]:
+            book.sheets[names_of_dataframes[iter]].range("A1:ZZ1").font.bold = True
+        
         ws.autofit()
 
 book.save()
@@ -190,5 +201,5 @@ book.close()
 
 #Rename file to current Data month:
 months = {1:"JAN",2:"FEB",3:"MAR",4:"APR",5:"MAY",6:"JUN",7:"JUL",8:"AUG",9:"SEP",10:"OCT",11:"NOV",12:"DEC"}
-output_destination_path = supplier_folder_path + "\\" + supplier_name_raw + "_" + months[(date.today() - pd.offsets.DateOffset(months=1)).month] + str(data_month_year)[-2:] + ".xlsx"
+output_destination_path = supplier_folder_path + "\\" + supplier_name + "_" + months[(date.today() - pd.offsets.DateOffset(months=1)).month] + str(data_month_year)[-2:] + ".xlsx"
 os.rename(output_path,output_destination_path)

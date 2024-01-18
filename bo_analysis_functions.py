@@ -253,7 +253,8 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name):
             Sum_ins = 0
             NDCs = []
             Percentage = []
-            bo_analysis_df["Percentage"] = ""
+            bo_analysis_df["Total"] = ""
+            bo_analysis_df["Percentage (Total OUTs/Total Ins)"] = ""
             bo_analysis_df["Comment"] = ""
 
             for i in df_trend_break.index:
@@ -288,11 +289,15 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name):
                     Percentage.append(0)                                    #Appending 0 if ins are not present
                     print(str(i) + " - Ins = 0")
 
+                bo_analysis_df["Total"].loc[i,"OUTs"] = Sum_outs
+                bo_analysis_df["Total"].loc[i,"Total Ins"] = Sum_ins
+                bo_analysis_df["Total"].loc[i,"Variance"] = Sum_outs - Sum_ins
+
             for iter, ndc in enumerate(NDCs):
                 #Adding Percentage column to bo_analysis_df
-                bo_analysis_df["Percentage"].loc[ndc,"OUTs"] = Percentage[iter]
+                bo_analysis_df["Percentage (Total OUTs/Total Ins)"].loc[ndc,"OUTs"] = Percentage[iter]
             
-            # Final_Output = pd.DataFrame(Percentage,index=NDCs,columns = ["Percentage"])
+            # Final_Output = pd.DataFrame(Percentage,index=NDCs,columns = ["Percentage (Total OUTs/Total Ins)"])
 
             #dropping NDCs from 'df_variance' which are not required
             for idx in df_variance.index:
@@ -301,21 +306,22 @@ def bo_and_sap_analysis(pivot, df_outs, sap_ins_pivot, supplier_name):
 
             #Adding Comments for 'Pass' cases
             # Final_Output["Comment"] = None
-
+            print(bo_analysis_df)
             variance_list = []
 
             for ndc in df_trend_break.index:
-                if bo_analysis_df["Percentage"].loc[ndc,"OUTs"] >= 95 and bo_analysis_df["Percentage"].loc[ndc,"OUTs"] <= 105:
+                print(ndc)
+                if bo_analysis_df["Percentage (Total OUTs/Total Ins)"].loc[ndc,"OUTs"] >= 95 and bo_analysis_df["Percentage (Total OUTs/Total Ins)"].loc[ndc,"OUTs"] <= 105:
                     if all(var == 0 for var in list(df_outs_only.loc[ndc])[:-1]):
                         bo_analysis_df["Comment"].loc[ndc,"OUTs"] = "New NDC " + str(ndc) + ", pass via Sellsins"
                     else:
                         bo_analysis_df["Comment"].loc[ndc,"OUTs"] = "Pass"
 
-                elif bo_analysis_df["Percentage"].loc[ndc,"OUTs"] == 0:
+                elif bo_analysis_df["Percentage (Total OUTs/Total Ins)"].loc[ndc,"OUTs"] == 0:
                     bo_analysis_df["Comment"].loc[ndc,"OUTs"] = "SellsIns seem incomplete"
                 else:
                     variance_list = list(df_variance.loc[ndc])
-                    if bo_analysis_df["Percentage"].loc[ndc,"OUTs"] <=50 or bo_analysis_df["Percentage"].loc[ndc,"OUTs"] >=150:
+                    if bo_analysis_df["Percentage (Total OUTs/Total Ins)"].loc[ndc,"OUTs"] <=50 or bo_analysis_df["Percentage (Total OUTs/Total Ins)"].loc[ndc,"OUTs"] >=150:
                         bo_analysis_df["Comment"].loc[ndc,"OUTs"] += "Very high variance, case to be monitored. "
 
                     if variance_list[-1] == 0:
